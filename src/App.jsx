@@ -231,7 +231,7 @@ const FlipCalculator = () => {
         <div style="width: 100%; max-width: 600px; height: 300px; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
           <iframe
             width="100%" height="100%" frameBorder="0" scrolling="no" marginHeight="0" marginWidth="0"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=${selectedCoordinates.lon-0.01},${selectedCoordinates.lat-0.01},${selectedCoordinates.lon+0.01},${selectedCoordinates.lat+0.01}&layer=mapnik&marker=${selectedCoordinates.lat},${selectedCoordinates.lon}"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=${selectedCoordinates.lon - 0.01},${selectedCoordinates.lat - 0.01},${selectedCoordinates.lon + 0.01},${selectedCoordinates.lat + 0.01}&layer=mapnik&marker=${selectedCoordinates.lat},${selectedCoordinates.lon}"
             style="border: 0;">
           </iframe>
         </div>
@@ -347,7 +347,7 @@ const FlipCalculator = () => {
           </div>
 
           <div class="section">
-            <h2>🤝 Распределение прибыли (${formatted.profitSplit}/${100-formatted.profitSplit})</h2>
+            <h2>🤝 Распределение прибыли (${formatted.profitSplit}/${100 - formatted.profitSplit})</h2>
             <div class="distribution">
               <div class="dist-card dist-investor">
                 <h3 style="margin-bottom: 12px; font-size: 16px;">Инвестор</h3>
@@ -462,11 +462,11 @@ const FlipCalculator = () => {
     if (dealType === 'offplan') {
       // OFF-PLAN: используем фактически оплаченную сумму
       const actualPaid = paidAmount || 0;
-      
+
       // Расчет даты продажи (от текущей даты + срок ремонта + срок экспозиции)
       const saleDate = new Date();
       saleDate.setMonth(saleDate.getMonth() + totalMonths);
-      
+
       // Расчет остатка долга - учитываем только платежи, которые НАСТУПАЮТ к моменту продажи
       remainingDebt = 0;
       if (paymentSchedule && paymentSchedule.length > 0) {
@@ -479,25 +479,25 @@ const FlipCalculator = () => {
           })
           .reduce((sum, p) => sum + (p.amount || 0), 0);
       }
-      
+
       // Общие затраты = фактически оплаченное + комиссии + ремонт + носимые
       totalCosts = actualPaid + dldAmount + buyerCommissionTotal + totalRenovation + carryingService + carryingDewa + buyClosingFees;
-      
+
       // Продажа
       const sellerCommissionAmount = sellingPrice * (sellerCommission / 100);
       const sellerCommissionVAT = sellerCommissionAmount * 0.05;
       const sellerCommissionTotal = sellerCommissionAmount + sellerCommissionVAT;
-      
+
       // Чистая выручка = цена - комиссии - остаток долга
       revenueNet = sellingPrice - sellerCommissionTotal - remainingDebt;
     } else {
       // SECONDARY: стандартная логика
       totalCosts = purchasePrice + dldAmount + buyerCommissionTotal + totalRenovation + carryingService + carryingDewa + buyClosingFees;
-      
+
       const sellerCommissionAmount = sellingPrice * (sellerCommission / 100);
       const sellerCommissionVAT = sellerCommissionAmount * 0.05;
       const sellerCommissionTotal = sellerCommissionAmount + sellerCommissionVAT;
-      
+
       revenueNet = sellingPrice - sellerCommissionTotal;
     }
 
@@ -564,12 +564,12 @@ const FlipCalculator = () => {
       { name: 'Комиссия продавца', value: -calculations.revenue.sellerCommission, fill: '#ef4444' },
       { name: 'VAT (5%)', value: -calculations.revenue.sellerCommissionVAT, fill: '#ef4444' },
     ];
-    
+
     // Добавляем остаток долга для off-plan
     if (params.dealType === 'offplan' && calculations.remainingDebt > 0) {
       data.push({ name: '💳 Остаток долга', value: -calculations.remainingDebt, fill: '#9333ea' });
     }
-    
+
     data.push(
       { name: params.dealType === 'offplan' ? 'Оплачено застройщику' : 'Покупка', value: -calculations.costs.purchase, fill: '#f59e0b' },
       { name: 'DLD/рег.', value: -calculations.costs.dld, fill: '#f59e0b' },
@@ -581,7 +581,7 @@ const FlipCalculator = () => {
       { name: 'Trustee Office (покупка)', value: -calculations.costs.trusteeOfficeFee, fill: '#f59e0b' },
       { name: 'Чистая прибыль', value: calculations.profit.net, fill: calculations.profit.net > 0 ? '#10b981' : '#ef4444' }
     );
-    
+
     return data;
   }, [calculations, params.dealType]);
 
@@ -722,8 +722,8 @@ const FlipCalculator = () => {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 text-white">
             <div className="flex items-center gap-3 mb-2">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm"
                 aria-label="Вернуться к выбору версии"
               >
@@ -739,7 +739,7 @@ const FlipCalculator = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6">
             {/* Левая колонка (ввод) */}
-            <div className="md:col-span-1 space-y-4 md:max-h-[800px] md:overflow-y-auto">
+            <div className="md:col-span-1 space-y-4">
               <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
                 <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">Информация об объекте</h2>
 
@@ -824,7 +824,7 @@ const FlipCalculator = () => {
                         <div className="rounded-lg overflow-hidden border border-gray-300 shadow-sm">
                           <iframe
                             width="100%" height="200" frameBorder="0" scrolling="no" marginHeight="0" marginWidth="0"
-                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedCoordinates.lon-0.01},${selectedCoordinates.lat-0.01},${selectedCoordinates.lon+0.01},${selectedCoordinates.lat+0.01}&layer=mapnik&marker=${selectedCoordinates.lat},${selectedCoordinates.lon}`}
+                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedCoordinates.lon - 0.01},${selectedCoordinates.lat - 0.01},${selectedCoordinates.lon + 0.01},${selectedCoordinates.lat + 0.01}&layer=mapnik&marker=${selectedCoordinates.lat},${selectedCoordinates.lon}`}
                             style={{ border: 0 }}
                             title="Карта локации"
                           />
@@ -864,22 +864,20 @@ const FlipCalculator = () => {
                       <button
                         type="button"
                         onClick={() => setParams(prev => ({ ...prev, dealType: 'secondary' }))}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                          params.dealType === 'secondary'
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${params.dealType === 'secondary'
                             ? 'bg-blue-600 text-white shadow-md'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                          }`}
                       >
                         🏢 Вторичка
                       </button>
                       <button
                         type="button"
                         onClick={() => setParams(prev => ({ ...prev, dealType: 'offplan' }))}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                          params.dealType === 'offplan'
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${params.dealType === 'offplan'
                             ? 'bg-purple-600 text-white shadow-md'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                          }`}
                       >
                         🏗️ Off-Plan
                       </button>
@@ -945,9 +943,9 @@ const FlipCalculator = () => {
                             + Добавить
                           </button>
                         </div>
-                        
+
                         {params.paymentSchedule.length > 0 && (
-                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                          <div className="space-y-2">
                             {params.paymentSchedule.map((payment, index) => (
                               <div key={index} className="bg-gray-50 p-2 rounded-lg border border-gray-200">
                                 <div className="flex items-center gap-2 mb-2">
@@ -998,13 +996,13 @@ const FlipCalculator = () => {
                             ))}
                           </div>
                         )}
-                        
+
                         {params.paymentSchedule.length === 0 && (
                           <p className="text-xs text-gray-500 text-center py-2">
                             Нет платежей. Нажмите "+Добавить"
                           </p>
                         )}
-                        
+
                         {params.paymentSchedule.length > 0 && (
                           <div className="mt-2 p-2 bg-purple-50 rounded border border-purple-200">
                             <div className="text-xs text-purple-800">
@@ -1290,13 +1288,12 @@ const FlipCalculator = () => {
                           const saleDate = new Date();
                           saleDate.setMonth(saleDate.getMonth() + calculations.totalMonths);
                           const isPaid = paymentDate && paymentDate <= saleDate;
-                          
+
                           return (
-                            <div 
-                              key={idx} 
-                              className={`flex justify-between items-center text-xs p-2 rounded ${
-                                isPaid ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
-                              }`}
+                            <div
+                              key={idx}
+                              className={`flex justify-between items-center text-xs p-2 rounded ${isPaid ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+                                }`}
                             >
                               <span className={isPaid ? 'text-red-700' : 'text-green-700'}>
                                 {isPaid ? '❌' : '✅'} #{idx + 1}: {payment.date || 'Дата не указана'}
@@ -1361,51 +1358,46 @@ const FlipCalculator = () => {
                 <div className="flex border-b border-gray-200 overflow-x-auto sticky top-0 z-10 bg-white">
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
-                      activeTab === 'overview'
+                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'overview'
                         ? 'border-b-2 border-blue-600 text-blue-600'
                         : 'text-gray-600 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     Водопад
                   </button>
                   <button
                     onClick={() => setActiveTab('formula')}
-                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
-                      activeTab === 'formula'
+                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'formula'
                         ? 'border-b-2 border-blue-600 text-blue-600'
                         : 'text-gray-600 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     Детальный расчет
                   </button>
                   <button
                     onClick={() => setActiveTab('sensitivity')}
-                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
-                      activeTab === 'sensitivity'
+                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'sensitivity'
                         ? 'border-b-2 border-blue-600 text-blue-600'
                         : 'text-gray-600 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     Сенситивность
                   </button>
                   <button
                     onClick={() => setActiveTab('early')}
-                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
-                      activeTab === 'early'
+                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'early'
                         ? 'border-b-2 border-blue-600 text-blue-600'
                         : 'text-gray-600 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     Ранняя продажа
                   </button>
                   <button
                     onClick={() => setActiveTab('saved')}
-                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${
-                      activeTab === 'saved'
+                    className={`px-4 sm:px-6 py-3 text-sm sm:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'saved'
                         ? 'border-b-2 border-blue-600 text-blue-600'
                         : 'text-gray-600 hover:text-gray-800'
-                    }`}
+                      }`}
                   >
                     Сохраненные ({savedProperties.length})
                   </button>
@@ -1561,7 +1553,7 @@ const FlipCalculator = () => {
                                 <span className="text-[10px] text-gray-500 ml-2">({formatCurrency(calculations.revenue.sellerCommission)} × 5%)</span>
                               </span>
                             </div>
-                            
+
                             {params.dealType === 'offplan' && calculations.remainingDebt > 0 && (
                               <div className="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-200">
                                 <span className="text-purple-700 font-medium">- 💳 Остаток долга застройщику (на дату продажи)</span>
