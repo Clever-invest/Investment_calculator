@@ -3,7 +3,7 @@
 // =====================================
 
 import { describe, it, expect } from 'vitest';
-import { computeProject, computeInvestor, validateInput, computeSensitivity } from '../calculations/core';
+import { computeProject, validateInput, computeSensitivity, computeDerived } from '../calculations/core';
 import type { DealInput } from '../calculations/types';
 
 const testInput: DealInput = {
@@ -22,8 +22,6 @@ const testInput: DealInput = {
   sellerFeeVatPct: 5,
   monthsRepair: 2,
   monthsExposure: 4,
-  investorProfitSharePct: 50,
-  operatorProfitSharePct: 50,
 };
 
 describe('Основные расчеты проекта', () => {
@@ -63,37 +61,6 @@ describe('Основные расчеты проекта', () => {
   });
 });
 
-describe('Расчеты для инвестора', () => {
-  it('должны рассчитать capital = totalCosts', () => {
-    const project = computeProject(testInput);
-    const investor = computeInvestor(testInput, project);
-    expect(investor.capital).toBe(project.totalCosts);
-  });
-  
-  it('должны рассчитать profitShare корректно', () => {
-    const project = computeProject(testInput);
-    const investor = computeInvestor(testInput, project);
-    expect(investor.profitShare).toBeCloseTo(215055, 10);
-  });
-  
-  it('должны рассчитать roiPeriod инвестора корректно', () => {
-    const project = computeProject(testInput);
-    const investor = computeInvestor(testInput, project);
-    expect(investor.roiPeriod).toBeCloseTo(0.121, 0.001);
-  });
-  
-  it('должны рассчитать irrAnnual инвестора корректно', () => {
-    const project = computeProject(testInput);
-    const investor = computeInvestor(testInput, project);
-    expect(investor.irrAnnual).toBeCloseTo(0.257, 0.002);
-  });
-  
-  it('должны рассчитать cashBack корректно', () => {
-    const project = computeProject(testInput);
-    const investor = computeInvestor(testInput, project);
-    expect(investor.cashBack).toBeCloseTo(project.totalCosts + investor.profitShare, 10);
-  });
-});
 
 describe('Граничные случаи', () => {
   it('должны обработать убыточный сценарий', () => {
@@ -162,17 +129,6 @@ describe('Валидация', () => {
     expect(result.errors.length).toBeGreaterThan(0);
   });
   
-  it('должна выдать ошибку если сплит != 100', () => {
-    const invalidInput: DealInput = {
-      ...testInput,
-      investorProfitSharePct: 60,
-      operatorProfitSharePct: 30,
-    };
-    const result = validateInput(invalidInput);
-    expect(result.isValid).toBe(false);
-    expect(result.errors.some(e => e.field === 'profitSplit')).toBe(true);
-  });
-  
   it('должна выдать предупреждение для убыточной сделки', () => {
     const warningInput: DealInput = {
       ...testInput,
@@ -226,5 +182,267 @@ describe('Анализ чувствительности', () => {
     const last = sensitivity.byMonths[sensitivity.byMonths.length - 1];
     
     expect(first.irrAnnual).toBeGreaterThan(last.irrAnnual);
+  });
+});
+
+// =====================================
+// OFF-PLAN РАСЧЕТЫ
+// =====================================
+
+const offplanInput: DealInput = {
+  dealType: 'offplan',
+  purchasePrice: 2000000,
+  paidAmount: 600000, // 30% оплачено
+  dldPct: 4,
+  buyerFeePct: 2,
+  buyerFeeVatPct: 5,
+  trusteeFee: 5000,
+  renovationBudget: 100000,
+  reservePct: 15,
+  serviceChargeAnnual: 12000,
+  dewaMonthly: 0,
+  salePrice: 2800000,
+  sellerFeePct: 4,
+  sellerFeeVatPct: 5,
+  monthsRepair: 0,
+  monthsExposure: 12,
+  paymentSchedule: [
+    { amount: 400000, date: '2025-06-01', label: 'Milestone 1' },
+    { amount: 500000, date: '2025-12-01', label: 'Milestone 2' },
+    { amount: 500000, date: '2026-06-01', label: 'Handover' },
+  ],
+};
+
+describe('Off-plan расчеты', () => {
+  it('должны корректно рассчитать totalCosts для off-plan', () => {
+    const project = computeProject(offplanInput);
+    
+    // totalCosts = paidAmount + DLD + buyerFee + VAT + renovation + carrying + trustee
+    // = 600000 + 80000 + 40000 + 2000 + 115000 + 12000 + 5000 = 854000
+    expect(project.totalCosts).toBeGreaterThan(0);
+    expect(project.totalCosts).toBeCloseTo(854000, -3);
+  });
+  
+  it('должны учитывать remainingDebt при расчёте netProceeds', () => {
+    const project = computeProject(offplanInput);
+    
+    // remainingDebt = платежи до даты продажи
+    expect(project.remainingDebt).toBeDefined();
+    expect(project.remainingDebt!).toBeGreaterThan(0);
+    
+    // netProceeds = salePrice - sellerFees - remainingDebt
+    const sellerFee = offplanInput.salePrice * 0.04;
+    const sellerFeeVAT = sellerFee * 0.05;
+    const expectedNetProceeds = offplanInput.salePrice - sellerFee - sellerFeeVAT - project.remainingDebt!;
+    expect(project.netProceeds).toBeCloseTo(expectedNetProceeds, 0);
+  });
+  
+  it('должны рассчитать break-even с учётом remainingDebt', () => {
+    const project = computeProject(offplanInput);
+    
+    // breakEven = (totalCosts + remainingDebt) / (1 - sellerFeeRate)
+    const sellerFeeRate = 0.04 * 1.05; // 4.2%
+    const expectedBreakEven = (project.totalCosts + (project.remainingDebt || 0)) / (1 - sellerFeeRate);
+    expect(project.breakEvenSalePrice).toBeCloseTo(expectedBreakEven, -2);
+  });
+  
+  it('должны учитывать только платежи до даты продажи в remainingDebt', () => {
+    // Создаём сделку где один платёж после даты продажи (через 24 месяца)
+    const futurePaymentInput: DealInput = {
+      ...offplanInput,
+      monthsExposure: 6, // продажа через 6 месяцев
+      paymentSchedule: [
+        { amount: 400000, date: '2025-03-01', label: 'Milestone 1' }, // до продажи
+        { amount: 500000, date: '2025-06-01', label: 'Milestone 2' }, // на грани
+        { amount: 500000, date: '2027-12-01', label: 'Handover' }, // после продажи
+      ],
+    };
+    
+    const project = computeProject(futurePaymentInput);
+    
+    // Только первые два платежа должны быть в remainingDebt
+    expect(project.remainingDebt).toBeLessThan(1400000); // не все платежи
+  });
+  
+  it('должны обработать off-plan без paymentSchedule', () => {
+    const noScheduleInput: DealInput = {
+      ...offplanInput,
+      paymentSchedule: undefined,
+    };
+    
+    const project = computeProject(noScheduleInput);
+    expect(project.remainingDebt).toBe(0);
+    expect(project.netProceeds).toBeDefined();
+  });
+  
+  it('должны обработать off-plan с пустым paymentSchedule', () => {
+    const emptyScheduleInput: DealInput = {
+      ...offplanInput,
+      paymentSchedule: [],
+    };
+    
+    const project = computeProject(emptyScheduleInput);
+    expect(project.remainingDebt).toBe(0);
+  });
+});
+
+describe('Валидация Off-plan', () => {
+  it('должна требовать paidAmount для off-plan', () => {
+    const invalidInput: DealInput = {
+      ...offplanInput,
+      paidAmount: undefined,
+    };
+    
+    const result = validateInput(invalidInput);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some(e => e.field === 'paidAmount')).toBe(true);
+  });
+  
+  it('должна выдать предупреждение если paidAmount > purchasePrice', () => {
+    const overPaidInput: DealInput = {
+      ...offplanInput,
+      paidAmount: 2500000, // больше purchasePrice
+    };
+    
+    const result = validateInput(overPaidInput);
+    expect(result.warnings.some(w => w.field === 'paidAmount')).toBe(true);
+  });
+  
+  it('должна валидировать план платежей - отрицательная сумма', () => {
+    const invalidScheduleInput: DealInput = {
+      ...offplanInput,
+      paymentSchedule: [
+        { amount: -100000, date: '2025-06-01', label: 'Bad' },
+      ],
+    };
+    
+    const result = validateInput(invalidScheduleInput);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some(e => e.field?.includes('paymentSchedule'))).toBe(true);
+  });
+  
+  it('должна валидировать план платежей - пустая дата', () => {
+    const noDateInput: DealInput = {
+      ...offplanInput,
+      paymentSchedule: [
+        { amount: 100000, date: '', label: 'No date' },
+      ],
+    };
+    
+    const result = validateInput(noDateInput);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some(e => e.field?.includes('paymentSchedule'))).toBe(true);
+  });
+  
+  it('должна выдать предупреждение если сумма платежей превышает стоимость', () => {
+    const overScheduledInput: DealInput = {
+      ...offplanInput,
+      paidAmount: 1500000,
+      paymentSchedule: [
+        { amount: 600000, date: '2025-06-01', label: 'Over' },
+      ],
+    };
+    
+    const result = validateInput(overScheduledInput);
+    expect(result.warnings.some(w => w.field === 'paymentSchedule')).toBe(true);
+  });
+});
+
+describe('computeDerived', () => {
+  it('должен корректно вычислять monthsTotal', () => {
+    const derived = computeDerived(testInput);
+    expect(derived.monthsTotal).toBe(testInput.monthsRepair + testInput.monthsExposure);
+  });
+  
+  it('должен корректно вычислять carryingMonthly', () => {
+    const derived = computeDerived(testInput);
+    const expected = testInput.serviceChargeAnnual / 12 + testInput.dewaMonthly;
+    expect(derived.carryingMonthly).toBeCloseTo(expected, 0);
+  });
+  
+  it('должен обработать нулевые носимые расходы', () => {
+    const zeroCostsInput: DealInput = {
+      ...testInput,
+      serviceChargeAnnual: 0,
+      dewaMonthly: 0,
+    };
+    
+    const derived = computeDerived(zeroCostsInput);
+    expect(derived.carryingMonthly).toBe(0);
+  });
+});
+
+describe('Дополнительные edge cases', () => {
+  it('должен обработать очень маленькую прибыль', () => {
+    const smallProfitInput: DealInput = {
+      ...testInput,
+      salePrice: 1860000, // чуть выше break-even
+    };
+    
+    const project = computeProject(smallProfitInput);
+    expect(project.profit).toBeGreaterThan(0);
+    expect(project.profit).toBeLessThan(50000);
+  });
+  
+  it('должен обработать очень длинный срок сделки', () => {
+    const longTermInput: DealInput = {
+      ...testInput,
+      monthsRepair: 12,
+      monthsExposure: 24,
+    };
+    
+    const project = computeProject(longTermInput);
+    expect(project.irrAnnual).toBeLessThan(0.5); // IRR снижается с увеличением срока
+    expect(project.totalCosts).toBeGreaterThan(testInput.purchasePrice);
+  });
+  
+  it('должен обработать нулевую комиссию продавца', () => {
+    const noSellerFeeInput: DealInput = {
+      ...testInput,
+      sellerFeePct: 0,
+      sellerFeeVatPct: 0,
+    };
+    
+    const project = computeProject(noSellerFeeInput);
+    expect(project.netProceeds).toBe(noSellerFeeInput.salePrice);
+    expect(project.breakEvenSalePrice).toBe(project.totalCosts);
+  });
+  
+  it('должен корректно считать при высоких комиссиях покупателя', () => {
+    const highBuyerFeeInput: DealInput = {
+      ...testInput,
+      dldPct: 6,
+      buyerFeePct: 5,
+      buyerFeeVatPct: 10,
+    };
+    
+    const project = computeProject(highBuyerFeeInput);
+    expect(project.totalCosts).toBeGreaterThan(testInput.purchasePrice * 1.1);
+  });
+  
+  it('должен обработать off-plan с 100% оплатой', () => {
+    const fullPaidOffplan: DealInput = {
+      ...offplanInput,
+      paidAmount: offplanInput.purchasePrice,
+      paymentSchedule: [],
+    };
+    
+    const project = computeProject(fullPaidOffplan);
+    expect(project.remainingDebt).toBe(0);
+    // Должен быть схож с secondary расчётом
+  });
+  
+  it('должен корректно округлять денежные значения', () => {
+    const oddNumbersInput: DealInput = {
+      ...testInput,
+      purchasePrice: 1234567.89,
+      salePrice: 2345678.90,
+    };
+    
+    const project = computeProject(oddNumbersInput);
+    // Проверяем что нет дробных копеек
+    expect(project.totalCosts).toBe(Math.round(project.totalCosts));
+    expect(project.netProceeds).toBe(Math.round(project.netProceeds));
+    expect(project.profit).toBe(Math.round(project.profit));
   });
 });

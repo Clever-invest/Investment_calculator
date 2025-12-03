@@ -7,7 +7,6 @@ import type {
   DealInput,
   DealDerived,
   DealOutputsProject,
-  DealOutputsInvestor,
   SensitivityResult,
   ValidationResult,
   ValidationError,
@@ -165,37 +164,6 @@ export function computeProject(input: DealInput): DealOutputsProject {
   };
 }
 
-/**
- * Вычисление метрик инвестора
- */
-export function computeInvestor(
-  input: DealInput,
-  project: DealOutputsProject
-): DealOutputsInvestor {
-  const derived = computeDerived(input);
-  const { monthsTotal } = derived;
-  
-  const capital = project.totalCosts;
-  const profitShare = project.profit * toRate(input.investorProfitSharePct);
-  const cashBack = capital + profitShare;
-  
-  const moic = capital > 0 ? cashBack / capital : 0;
-  const roiPeriod = capital > 0 ? profitShare / capital : 0;
-  
-  let irrAnnual = 0;
-  if (monthsTotal > 0 && moic > 0) {
-    irrAnnual = Math.pow(moic, 12 / monthsTotal) - 1;
-  }
-  
-  return {
-    capital: roundMoney(capital),
-    profitShare: roundMoney(profitShare),
-    cashBack: roundMoney(cashBack),
-    moic,
-    roiPeriod,
-    irrAnnual,
-  };
-}
 
 /**
  * Анализ чувствительности (sensitivity)
@@ -287,8 +255,6 @@ export function validateInput(input: DealInput): ValidationResult {
     ['sellerFeePct', 'Комиссия продавца'],
     ['sellerFeeVatPct', 'VAT на комиссию продавца'],
     ['reservePct', 'Резерв ремонта'],
-    ['investorProfitSharePct', 'Доля инвестора'],
-    ['operatorProfitSharePct', 'Доля оператора'],
   ];
   
   pctFields.forEach(([field, label]) => {
@@ -341,15 +307,6 @@ export function validateInput(input: DealInput): ValidationResult {
     errors.push({
       field: 'monthsTotal',
       message: 'Общий срок сделки должен быть больше 0',
-    });
-  }
-  
-  // Проверка сплита прибыли
-  const splitSum = input.investorProfitSharePct + input.operatorProfitSharePct;
-  if (Math.abs(splitSum - 100) > 0.01) {
-    errors.push({
-      field: 'profitSplit',
-      message: 'Сумма долей инвестора и оператора должна равняться 100%',
     });
   }
   

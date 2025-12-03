@@ -8,15 +8,25 @@ export type Pct = number;   // 0..100 в UI, 0..1 в вычислениях
 // Тип сделки
 export type DealType = 'secondary' | 'offplan'; // вторичка или офф-план
 
+// Тип недвижимости
+export type PropertyType = 'apartment' | 'villa' | 'townhouse';
+
 // Запись в плане платежей
 export interface PaymentScheduleItem {
   amount: Money;      // сумма платежа
   date: string;       // дата платежа в ISO формате (YYYY-MM-DD)
+  label?: string;     // описание платежа (например "Milestone 1", "Handover")
 }
 
 export interface DealInput {
   // Тип сделки
   dealType: DealType;              // 'secondary' или 'offplan'
+  
+  // Информация об объекте
+  propertyType?: PropertyType;     // тип недвижимости
+  unitAreaSqft?: number;           // площадь помещения в кв.футах
+  plotAreaSqft?: number;           // площадь участка в кв.футах (для вилл/таунхаузов)
+  propertyImages?: string[];       // массив URL/base64 изображений
   
   // Покупка
   purchasePrice: Money;            // для secondary - полная цена, для offplan - общая стоимость от застройщика
@@ -32,6 +42,7 @@ export interface DealInput {
   // Ремонт
   renovationBudget: Money;
   reservePct: Pct;                 // резерв от бюджета ремонта (например 15)
+  renovationComments?: string;     // комментарии и заметки по ремонту
 
   // Носимые расходы за период владения
   serviceChargeAnnual: Money;      // годовой
@@ -45,10 +56,6 @@ export interface DealInput {
   // Сроки
   monthsRepair: number;            // целые месяцы
   monthsExposure: number;          // целые месяцы
-
-  // Сплит прибыли
-  investorProfitSharePct: Pct;     // напр. 50 (инвестор)
-  operatorProfitSharePct: Pct;     // напр. 50 (оператор)
 }
 
 export interface DealDerived {
@@ -70,14 +77,6 @@ export interface DealOutputsProject {
   remainingDebt?: Money;           // для offplan: остаток долга по плану платежей
 }
 
-export interface DealOutputsInvestor {
-  capital: Money;                  // инвестор финансирует totalCosts проекта
-  profitShare: Money;              // profit * investorProfitSharePct
-  cashBack: Money;                 // capital + profitShare
-  moic: number;                    // cashBack / capital
-  roiPeriod: number;               // profitShare / capital
-  irrAnnual: number;               // moic^(12/monthsTotal) - 1
-}
 
 export interface SensitivityDataPoint {
   salePrice?: Money;
