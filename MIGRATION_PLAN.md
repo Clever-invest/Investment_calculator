@@ -420,68 +420,222 @@ npm run test:all      # Все тесты
 
 ## 7. Фаза 6: Backend интеграция
 
-**Цель:** Добавить серверное хранение данных
+**Цель:** Добавить серверное хранение данных и аутентификацию
 
-### 7.1. Выбор Backend
+### 7.1. Выбор стека
 
-**Рекомендация:** Supabase (PostgreSQL + Auth + Storage)
+**Выбрано:** Firebase (всё в одном)
 
-**Альтернативы:**
-- Firebase — если нужен realtime
-- PocketBase — self-hosted альтернатива
-- Собственный API — если нужен полный контроль
+| Компонент | Сервис Firebase | Бесплатный лимит (Spark план) |
+|-----------|-----------------|-------------------------------|
+| Auth | **Firebase Auth** | Безлимитно (email, Google, GitHub) |
+| Database | **Firestore** | 1GB storage, 50K reads/day, 20K writes/day |
+| Images | **Firebase Storage** | 5GB storage, 1GB/day download |
 
-### 7.2. Настройка Supabase
+**Преимущества Firebase:**
+- ✅ **Один инструмент** — один аккаунт, один dashboard, один SDK
+- ✅ **Щедрый бесплатный план** — достаточно для MVP и небольших проектов
+- ✅ **Отличные SDK** — React hooks из коробки
+- ✅ **Realtime** — данные обновляются автоматически
+- ✅ **Оффлайн** — встроенная поддержка offline mode
 
-- [ ] Создать проект в Supabase
-- [ ] Настроить базу данных (таблицы)
-- [ ] Настроить Row Level Security (RLS)
-- [ ] Получить и сохранить ключи API
+**Архитектура:**
+```
+Browser (React)
+    └── Firebase SDK
+            ├── Auth ──────► Firebase Auth
+            ├── Firestore ──► Firestore Database
+            └── Storage ───► Firebase Storage
+```
 
-### 7.3. Схема базы данных
+### 7.2. Создание проекта Firebase
 
-**Таблица: users**
-- [ ] id, email, created_at
-- [ ] Связь с Supabase Auth
+- [ ] Создать проект на console.firebase.google.com
+- [ ] Включить Authentication (Email/Password, Google)
+- [ ] Создать Firestore Database (production mode)
+- [ ] Включить Storage
+- [ ] Получить конфигурацию проекта (firebaseConfig)
 
-**Таблица: properties**
-- [ ] id, user_id, name, location, deal_type
-- [ ] params (JSONB) — все параметры сделки
-- [ ] calculations (JSONB) — результаты расчётов
-- [ ] coordinates (JSONB) — координаты
-- [ ] images (text[]) — URL изображений
-- [ ] created_at, updated_at
+### 7.3. Настройка Firebase Auth
 
-### 7.4. Аутентификация
+- [ ] Включить провайдеры: Email/Password, Google
+- [ ] (Опционально) Добавить GitHub OAuth
+- [ ] Настроить домены для авторизации (localhost, production URL)
 
-- [ ] Настроить Supabase Auth
-- [ ] Создать компонент AuthProvider
-- [ ] Создать страницу входа/регистрации
-- [ ] Добавить OAuth провайдеры (Google, GitHub)
-- [ ] Настроить защиту маршрутов
+**Компоненты для создания:**
+- [ ] `/src/components/auth/SignIn.tsx` — страница входа
+- [ ] `/src/components/auth/SignUp.tsx` — страница регистрации
+- [ ] `/src/components/auth/AuthGuard.tsx` — защита роутов
+- [ ] `/src/components/auth/UserMenu.tsx` — меню пользователя
 
-### 7.5. Миграция хранилища
+### 7.4. Настройка Firestore (Database)
 
-- [ ] Создать supabase client (lib/supabase.ts)
-- [ ] Создать API-слой для properties (services/api.ts)
-- [ ] Заменить localStorage на API вызовы
-- [ ] Добавить оффлайн-режим с синхронизацией
-- [ ] Мигрировать существующие данные пользователей
+**Структура коллекций:**
+```
+users/
+  └── {userId}/
+        ├── email: string
+        ├── displayName: string
+        ├── createdAt: timestamp
+        └── settings: { ... }
 
-### 7.6. Хранение изображений
+properties/
+  └── {propertyId}/
+        ├── userId: string (индекс)
+        ├── name: string
+        ├── location: string
+        ├── dealType: 'secondary' | 'offplan'
+        ├── params: { ... }        // параметры сделки
+        ├── calculations: { ... }  // результаты расчётов
+        ├── coordinates: { lat, lng }
+        ├── images: string[]       // URLs из Storage
+        ├── createdAt: timestamp
+        └── updatedAt: timestamp
+```
 
-- [ ] Настроить Supabase Storage bucket
-- [ ] Создать сервис для загрузки изображений
-- [ ] Заменить base64 на URL из Storage
-- [ ] Добавить сжатие изображений перед загрузкой
+**Security Rules (Firestore):**
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Пользователи могут читать/писать только свои данные
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /properties/{propertyId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
+```
 
-### 7.7. Критерии завершения фазы
+### 7.5. Настройка Firebase Storage (Images)
 
-- [ ] Пользователи могут регистрироваться и входить
-- [ ] Данные синхронизируются между устройствами
-- [ ] Изображения хранятся в облаке
-- [ ] RLS защищает данные пользователей
-- [ ] Работает оффлайн-режим с синхронизацией
+**Структура папок:**
+```
+users/
+  └── {userId}/
+        └── properties/
+              └── {propertyId}/
+                    ├── image_0.jpg
+                    ├── image_1.jpg
+                    └── ...
+```
+
+**Security Rules (Storage):**
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 7.6. Создание сервисов
+
+**`/src/lib/firebase.ts`** — инициализация:
+```typescript
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+```
+
+**`/src/services/auth.ts`** — аутентификация:
+- [ ] signIn(email, password)
+- [ ] signUp(email, password)
+- [ ] signInWithGoogle()
+- [ ] signOut()
+- [ ] getCurrentUser()
+- [ ] onAuthStateChanged(callback)
+
+**`/src/services/properties.ts`** — работа с объектами:
+- [ ] getProperties(userId) — список объектов
+- [ ] getProperty(id) — один объект
+- [ ] saveProperty(property) — создать/обновить
+- [ ] deleteProperty(id) — удалить
+- [ ] subscribeToProperties(userId, callback) — realtime подписка
+
+**`/src/services/storage.ts`** — изображения:
+- [ ] uploadImage(userId, propertyId, file) — загрузить
+- [ ] deleteImage(path) — удалить
+- [ ] getImageUrl(path) — получить URL
+
+### 7.7. Интеграция в приложение
+
+- [ ] Добавить FirebaseProvider в main.tsx (или использовать контекст)
+- [ ] Создать хук useAuth() для работы с авторизацией
+- [ ] Заменить localStorage на Firestore в propertiesStore
+- [ ] Включить Firestore offline persistence
+- [ ] Обновить ImageUploader для Firebase Storage
+- [ ] Добавить loading states и error handling
+
+### 7.8. Миграция существующих данных
+
+- [ ] Создать утилиту миграции localStorage → Firestore
+- [ ] Показать пользователю prompt при первом входе
+- [ ] Автоматически мигрировать данные после регистрации
+- [ ] Очистить localStorage после успешной миграции
+
+### 7.9. Критерии завершения фазы
+
+- [ ] Пользователи могут регистрироваться через Email/Google
+- [ ] Данные сохраняются в Firestore
+- [ ] Изображения загружаются в Firebase Storage
+- [ ] Работает оффлайн-режим (Firestore persistence)
+- [ ] Данные синхронизируются между устройствами в realtime
+- [ ] Security Rules защищают данные пользователей
+
+### 7.10. Команды установки
+
+```bash
+npm install firebase
+```
+
+### 7.11. Переменные окружения
+
+```env
+# .env.local (не коммитить!)
+VITE_FIREBASE_API_KEY=xxx
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=xxx
+VITE_FIREBASE_APP_ID=xxx
+```
+
+### 7.12. Бесплатные лимиты Firebase (Spark план)
+
+| Сервис | Лимит | Достаточно для |
+|--------|-------|----------------|
+| **Auth** | Безлимитно | Любого количества пользователей |
+| **Firestore reads** | 50K/день | ~500 активных пользователей |
+| **Firestore writes** | 20K/день | ~200 сохранений/день |
+| **Firestore storage** | 1GB | ~10K объектов с данными |
+| **Storage** | 5GB | ~5000 фото по 1MB |
+| **Storage download** | 1GB/день | ~1000 просмотров фото/день |
+
+> **Примечание:** При превышении лимитов можно перейти на Blaze план (pay-as-you-go). Цены очень низкие для небольших проектов.
 
 ---
 
@@ -616,6 +770,7 @@ npm install -D vite-plugin-pwa
 | 03.12.2025 | 1.3 | ✅ **Фаза 2 завершена!** Все файлы мигрированы на TypeScript, strict режим включён. |
 | 03.12.2025 | 1.4 | ✅ **Фаза 4 завершена!** State Management с Zustand: 3 stores, persist, devtools. |
 | 03.12.2025 | 1.5 | ✅ **Фаза 5 завершена!** Тестирование: 100 unit/component тестов, 5 E2E spec файлов, CI настроен. |
+| 04.12.2025 | 1.6 | Фаза 6 переработана: выбран **Firebase** (Auth + Firestore + Storage) вместо Clerk + Upstash + Cloudinary. Один инструмент вместо трёх. |
 
 ---
 
