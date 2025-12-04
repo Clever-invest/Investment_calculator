@@ -424,43 +424,44 @@ npm run test:all      # Все тесты
 
 ### 7.1. Выбор стека
 
-**Выбрано:** Firebase (всё в одном)
+**Выбрано:** Supabase (PostgreSQL + Auth + Storage)
 
-| Компонент | Сервис Firebase | Бесплатный лимит (Spark план) |
-|-----------|-----------------|-------------------------------|
-| Auth | **Firebase Auth** | Безлимитно (email, Google, GitHub) |
-| Database | **Firestore** | 1GB storage, 50K reads/day, 20K writes/day |
-| Images | **Firebase Storage** | 5GB storage, 1GB/day download |
+| Компонент | Сервис Supabase | Бесплатный лимит (Free план) |
+|-----------|-----------------|------------------------------|
+| Auth | **Supabase Auth** | 50K MAU, OAuth (Google, GitHub, etc.) |
+| Database | **PostgreSQL** | 500MB storage, без лимита запросов |
+| Images | **Supabase Storage** | 1GB storage, 2GB bandwidth/month |
 
-**Преимущества Firebase:**
-- ✅ **Один инструмент** — один аккаунт, один dashboard, один SDK
-- ✅ **Щедрый бесплатный план** — достаточно для MVP и небольших проектов
-- ✅ **Отличные SDK** — React hooks из коробки
-- ✅ **Realtime** — данные обновляются автоматически
-- ✅ **Оффлайн** — встроенная поддержка offline mode
+**Преимущества Supabase:**
+- ✅ **PostgreSQL** — реляционная БД, SQL, надёжность
+- ✅ **Один инструмент** — Auth + DB + Storage + Realtime
+- ✅ **Open Source** — можно self-host при необходимости
+- ✅ **Отличный SDK** — `@supabase/supabase-js` с TypeScript
+- ✅ **Row Level Security** — безопасность на уровне БД
+- ✅ **Realtime** — подписки на изменения из коробки
 
 **Архитектура:**
 ```
 Browser (React)
-    └── Firebase SDK
-            ├── Auth ──────► Firebase Auth
-            ├── Firestore ──► Firestore Database
-            └── Storage ───► Firebase Storage
+    └── Supabase SDK
+            ├── Auth ──────► Supabase Auth
+            ├── PostgreSQL ─► Supabase Database
+            └── Storage ───► Supabase Storage
 ```
 
-### 7.2. Создание проекта Firebase
+### 7.2. Создание проекта Supabase
 
-- [ ] Создать проект на console.firebase.google.com
-- [ ] Включить Authentication (Email/Password, Google)
-- [ ] Создать Firestore Database (production mode)
-- [ ] Включить Storage
-- [ ] Получить конфигурацию проекта (firebaseConfig)
+- [ ] Создать проект на supabase.com
+- [ ] Дождаться инициализации (~2 минуты)
+- [ ] Получить Project URL и anon/public key
+- [ ] Настроить Authentication providers
 
-### 7.3. Настройка Firebase Auth
+### 7.3. Настройка Supabase Auth
 
-- [ ] Включить провайдеры: Email/Password, Google
+- [ ] Включить Email/Password provider
+- [ ] Добавить Google OAuth (Site URL, Redirect URLs)
 - [ ] (Опционально) Добавить GitHub OAuth
-- [ ] Настроить домены для авторизации (localhost, production URL)
+- [ ] Настроить Email templates (confirmation, recovery)
 
 **Компоненты для создания:**
 - [ ] `/src/components/auth/SignIn.tsx` — страница входа
@@ -468,97 +469,154 @@ Browser (React)
 - [ ] `/src/components/auth/AuthGuard.tsx` — защита роутов
 - [ ] `/src/components/auth/UserMenu.tsx` — меню пользователя
 
-### 7.4. Настройка Firestore (Database)
+### 7.4. Настройка PostgreSQL (Database)
 
-**Структура коллекций:**
+**Таблица: profiles** (расширение auth.users)
+```sql
+create table public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  email text,
+  display_name text,
+  avatar_url text,
+  settings jsonb default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Автосоздание профиля при регистрации
+create function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, display_name)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 ```
-users/
+
+**Таблица: properties**
+```sql
+create table public.properties (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  name text not null,
+  location text,
+  deal_type text check (deal_type in ('secondary', 'offplan')) not null,
+  params jsonb not null default '{}',
+  calculations jsonb default '{}',
+  coordinates jsonb,
+  images text[] default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Индекс для быстрого поиска по user_id
+create index properties_user_id_idx on public.properties(user_id);
+
+-- Автообновление updated_at
+create function update_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger properties_updated_at
+  before update on public.properties
+  for each row execute procedure update_updated_at();
+```
+
+**Row Level Security (RLS):**
+```sql
+-- Включить RLS
+alter table public.profiles enable row level security;
+alter table public.properties enable row level security;
+
+-- Политики для profiles
+create policy "Users can view own profile"
+  on public.profiles for select
+  using (auth.uid() = id);
+
+create policy "Users can update own profile"
+  on public.profiles for update
+  using (auth.uid() = id);
+
+-- Политики для properties
+create policy "Users can view own properties"
+  on public.properties for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own properties"
+  on public.properties for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own properties"
+  on public.properties for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own properties"
+  on public.properties for delete
+  using (auth.uid() = user_id);
+```
+
+### 7.5. Настройка Supabase Storage (Images)
+
+- [ ] Создать bucket `property-images` (public или private)
+- [ ] Настроить политики доступа
+
+**Storage Policies:**
+```sql
+-- Политика для загрузки (только свои файлы)
+create policy "Users can upload own images"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'property-images' 
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- Политика для чтения (только свои файлы)
+create policy "Users can view own images"
+  on storage.objects for select
+  using (
+    bucket_id = 'property-images' 
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- Политика для удаления
+create policy "Users can delete own images"
+  on storage.objects for delete
+  using (
+    bucket_id = 'property-images' 
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+```
+
+**Структура папок в Storage:**
+```
+property-images/
   └── {userId}/
-        ├── email: string
-        ├── displayName: string
-        ├── createdAt: timestamp
-        └── settings: { ... }
-
-properties/
-  └── {propertyId}/
-        ├── userId: string (индекс)
-        ├── name: string
-        ├── location: string
-        ├── dealType: 'secondary' | 'offplan'
-        ├── params: { ... }        // параметры сделки
-        ├── calculations: { ... }  // результаты расчётов
-        ├── coordinates: { lat, lng }
-        ├── images: string[]       // URLs из Storage
-        ├── createdAt: timestamp
-        └── updatedAt: timestamp
-```
-
-**Security Rules (Firestore):**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Пользователи могут читать/писать только свои данные
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    match /properties/{propertyId} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null 
-        && request.auth.uid == request.resource.data.userId;
-    }
-  }
-}
-```
-
-### 7.5. Настройка Firebase Storage (Images)
-
-**Структура папок:**
-```
-users/
-  └── {userId}/
-        └── properties/
-              └── {propertyId}/
-                    ├── image_0.jpg
-                    ├── image_1.jpg
-                    └── ...
-```
-
-**Security Rules (Storage):**
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
+        └── {propertyId}/
+              ├── image_0.jpg
+              ├── image_1.jpg
+              └── ...
 ```
 
 ### 7.6. Создание сервисов
 
-**`/src/lib/firebase.ts`** — инициализация:
+**`/src/lib/supabase.ts`** — инициализация:
 ```typescript
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 ```
 
 **`/src/services/auth.ts`** — аутентификация:
@@ -567,75 +625,82 @@ export const storage = getStorage(app);
 - [ ] signInWithGoogle()
 - [ ] signOut()
 - [ ] getCurrentUser()
-- [ ] onAuthStateChanged(callback)
+- [ ] onAuthStateChange(callback)
 
 **`/src/services/properties.ts`** — работа с объектами:
 - [ ] getProperties(userId) — список объектов
 - [ ] getProperty(id) — один объект
-- [ ] saveProperty(property) — создать/обновить
+- [ ] createProperty(property) — создать
+- [ ] updateProperty(id, updates) — обновить
 - [ ] deleteProperty(id) — удалить
-- [ ] subscribeToProperties(userId, callback) — realtime подписка
+- [ ] subscribeToProperties(userId, callback) — realtime
 
 **`/src/services/storage.ts`** — изображения:
 - [ ] uploadImage(userId, propertyId, file) — загрузить
 - [ ] deleteImage(path) — удалить
-- [ ] getImageUrl(path) — получить URL
+- [ ] getImageUrl(path) — получить публичный URL
 
-### 7.7. Интеграция в приложение
+### 7.7. Генерация TypeScript типов
 
-- [ ] Добавить FirebaseProvider в main.tsx (или использовать контекст)
+```bash
+# Установить Supabase CLI
+npm install -g supabase
+
+# Сгенерировать типы из схемы БД
+supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.ts
+```
+
+### 7.8. Интеграция в приложение
+
+- [ ] Создать AuthContext и AuthProvider
 - [ ] Создать хук useAuth() для работы с авторизацией
-- [ ] Заменить localStorage на Firestore в propertiesStore
-- [ ] Включить Firestore offline persistence
-- [ ] Обновить ImageUploader для Firebase Storage
+- [ ] Заменить localStorage на Supabase в propertiesStore
+- [ ] Обновить ImageUploader для Supabase Storage
 - [ ] Добавить loading states и error handling
+- [ ] Настроить realtime подписки (опционально)
 
-### 7.8. Миграция существующих данных
+### 7.9. Миграция существующих данных
 
-- [ ] Создать утилиту миграции localStorage → Firestore
+- [ ] Создать утилиту миграции localStorage → Supabase
 - [ ] Показать пользователю prompt при первом входе
 - [ ] Автоматически мигрировать данные после регистрации
 - [ ] Очистить localStorage после успешной миграции
 
-### 7.9. Критерии завершения фазы
+### 7.10. Критерии завершения фазы
 
 - [ ] Пользователи могут регистрироваться через Email/Google
-- [ ] Данные сохраняются в Firestore
-- [ ] Изображения загружаются в Firebase Storage
-- [ ] Работает оффлайн-режим (Firestore persistence)
-- [ ] Данные синхронизируются между устройствами в realtime
-- [ ] Security Rules защищают данные пользователей
+- [ ] Данные сохраняются в PostgreSQL
+- [ ] Изображения загружаются в Supabase Storage
+- [ ] RLS политики защищают данные пользователей
+- [ ] Данные синхронизируются между устройствами
+- [ ] Существующие данные можно мигрировать
 
-### 7.10. Команды установки
+### 7.11. Команды установки
 
 ```bash
-npm install firebase
+npm install @supabase/supabase-js
 ```
 
-### 7.11. Переменные окружения
+### 7.12. Переменные окружения
 
 ```env
 # .env.local (не коммитить!)
-VITE_FIREBASE_API_KEY=xxx
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=xxx
-VITE_FIREBASE_APP_ID=xxx
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJxxx...
 ```
 
-### 7.12. Бесплатные лимиты Firebase (Spark план)
+### 7.13. Бесплатные лимиты Supabase (Free план)
 
 | Сервис | Лимит | Достаточно для |
 |--------|-------|----------------|
-| **Auth** | Безлимитно | Любого количества пользователей |
-| **Firestore reads** | 50K/день | ~500 активных пользователей |
-| **Firestore writes** | 20K/день | ~200 сохранений/день |
-| **Firestore storage** | 1GB | ~10K объектов с данными |
-| **Storage** | 5GB | ~5000 фото по 1MB |
-| **Storage download** | 1GB/день | ~1000 просмотров фото/день |
+| **Auth** | 50K MAU | Большинства проектов |
+| **Database** | 500MB | ~50K объектов с данными |
+| **API requests** | Безлимитно | Любой нагрузки |
+| **Realtime** | 200 connections | ~200 одновременных пользователей |
+| **Storage** | 1GB | ~1000 фото по 1MB |
+| **Bandwidth** | 2GB/month | Умеренный трафик |
 
-> **Примечание:** При превышении лимитов можно перейти на Blaze план (pay-as-you-go). Цены очень низкие для небольших проектов.
+> **Примечание:** При превышении лимитов можно перейти на Pro план ($25/month). Включает 8GB DB, 100GB Storage, 50GB bandwidth.
 
 ---
 
@@ -770,7 +835,7 @@ npm install -D vite-plugin-pwa
 | 03.12.2025 | 1.3 | ✅ **Фаза 2 завершена!** Все файлы мигрированы на TypeScript, strict режим включён. |
 | 03.12.2025 | 1.4 | ✅ **Фаза 4 завершена!** State Management с Zustand: 3 stores, persist, devtools. |
 | 03.12.2025 | 1.5 | ✅ **Фаза 5 завершена!** Тестирование: 100 unit/component тестов, 5 E2E spec файлов, CI настроен. |
-| 04.12.2025 | 1.6 | Фаза 6 переработана: выбран **Firebase** (Auth + Firestore + Storage) вместо Clerk + Upstash + Cloudinary. Один инструмент вместо трёх. |
+| 04.12.2025 | 1.6 | Фаза 6 переработана: выбран **Supabase** (PostgreSQL + Auth + Storage). Полные SQL миграции и RLS политики. |
 
 ---
 
