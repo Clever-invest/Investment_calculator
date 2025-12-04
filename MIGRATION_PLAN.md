@@ -428,7 +428,7 @@ npm run test:all      # Все тесты
 
 | Компонент | Сервис Supabase | Бесплатный лимит (Free план) |
 |-----------|-----------------|------------------------------|
-| Auth | **Supabase Auth** | 50K MAU, OAuth (Google, GitHub, etc.) |
+| Auth | **Supabase Auth** | 50K MAU, Email/Password |
 | Database | **PostgreSQL** | 500MB storage, без лимита запросов |
 | Images | **Supabase Storage** | 1GB storage, 2GB bandwidth/month |
 
@@ -459,9 +459,8 @@ Browser (React)
 ### 7.3. Настройка Supabase Auth
 
 - [ ] Включить Email/Password provider
-- [ ] Добавить Google OAuth (Site URL, Redirect URLs)
-- [ ] (Опционально) Добавить GitHub OAuth
 - [ ] Настроить Email templates (confirmation, recovery)
+- [ ] Настроить Redirect URLs для подтверждения email
 
 **Компоненты для создания:**
 - [ ] `/src/components/auth/SignIn.tsx` — страница входа
@@ -622,8 +621,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 **`/src/services/auth.ts`** — аутентификация:
 - [ ] signIn(email, password)
 - [ ] signUp(email, password)
-- [ ] signInWithGoogle()
 - [ ] signOut()
+- [ ] resetPassword(email)
 - [ ] getCurrentUser()
 - [ ] onAuthStateChange(callback)
 
@@ -668,7 +667,7 @@ supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/database.
 
 ### 7.10. Критерии завершения фазы
 
-- [ ] Пользователи могут регистрироваться через Email/Google
+- [ ] Пользователи могут регистрироваться через Email/Password
 - [ ] Данные сохраняются в PostgreSQL
 - [ ] Изображения загружаются в Supabase Storage
 - [ ] RLS политики защищают данные пользователей
