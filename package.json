@@ -14,9 +14,11 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:install": "playwright install chromium",
-    "test:all": "vitest run"
+    "test:all": "vitest run",
+    "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.86.2",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -37,10 +39,13 @@
     "happy-dom": "^20.0.11",
     "jsdom": "^27.0.1",
     "postcss": "^8.4.47",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9.3",
     "vite": "^5.2.0",
-    "vitest": "^4.0.5"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.0.5",
+    "workbox-window": "^7.4.0"
   },
   "engines": {
     "node": ">=18.0.0"

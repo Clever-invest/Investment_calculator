@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://clever-invest.github.io/Investment_calculator/sitemap.xml

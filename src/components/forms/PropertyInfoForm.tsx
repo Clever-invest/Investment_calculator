@@ -11,6 +11,7 @@ import type { CalculatorParams, Coordinates, PropertyType } from '../../types/ca
 interface PropertyInfoFormProps {
   params: CalculatorParams;
   coordinates: Coordinates | null;
+  propertyId?: string; // ID объекта для cloud storage (при редактировании)
   onParamChange: (key: keyof CalculatorParams, value: any) => void;
   onCoordinatesChange: (coords: Coordinates | null) => void;
 }
@@ -24,6 +25,7 @@ const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
 export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
   params,
   coordinates,
+  propertyId,
   onParamChange,
   onCoordinatesChange
 }) => {
@@ -110,6 +112,8 @@ export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
         {/* Загрузка фото */}
         <ImageUploader
           images={params.propertyImages}
+          propertyId={propertyId}
+          useCloudStorage={!!propertyId}
           onChange={(images) => onParamChange('propertyImages', images)}
         />
 

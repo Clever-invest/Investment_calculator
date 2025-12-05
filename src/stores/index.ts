@@ -29,3 +29,11 @@ export {
   TABS,
   type TabId
 } from './uiStore';
+
+export {
+  useAuthStore,
+  selectUser,
+  selectIsAuthenticated,
+  selectAuthLoading,
+  selectAuthInitialized
+} from './authStore';

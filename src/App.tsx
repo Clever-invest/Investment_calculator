@@ -2,9 +2,11 @@
  * Калькулятор флиппинга недвижимости - v2 (рефакторинг)
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Download, MapPin, Home } from 'lucide-react';
+// Компоненты авторизации
+import { AuthModal, UserMenu } from './components/auth';
 
 // Компоненты форм
 import { PropertyInfoForm, DealParamsForm } from './components/forms';
@@ -33,7 +35,8 @@ import { loadAllProperties } from './services/storage';
 import { 
   useCalculatorStore, 
   usePropertiesStore, 
-  useUIStore, 
+  useUIStore,
+  useAuthStore,
   TABS 
 } from './stores';
 // Типы
@@ -41,17 +44,34 @@ import type { CalculatorParams, SavedProperty } from './types/calculator';
 import { formatCurrency } from './utils/format';
 
 const FlipCalculator: React.FC = () => {
+  // Auth Modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
+  
+  // Temporary property ID for new properties (used for image uploads)
+  const [tempPropertyId, setTempPropertyId] = useState<string>(() => crypto.randomUUID());
+
+  // Auth Store
+  const user = useAuthStore((state) => state.user);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initializeAuth = useAuthStore((state) => state.initialize);
+
   // Calculator Store
   const params = useCalculatorStore((state) => state.params);
   const coordinates = useCalculatorStore((state) => state.coordinates);
   const updateParam = useCalculatorStore((state) => state.updateParam);
   const setCoordinates = useCalculatorStore((state) => state.setCoordinates);
   const loadFromSaved = useCalculatorStore((state) => state.loadFromSaved);
+  const resetParams = useCalculatorStore((state) => state.resetParams);
 
   // Properties Store
   const properties = usePropertiesStore((state) => state.properties);
   const addProperty = usePropertiesStore((state) => state.addProperty);
+  const addPropertyAsync = usePropertiesStore((state) => state.addPropertyAsync);
   const removeProperty = usePropertiesStore((state) => state.deleteProperty);
+  const syncWithCloud = usePropertiesStore((state) => state.syncWithCloud);
+  const migrateLocalToCloud = usePropertiesStore((state) => state.migrateLocalToCloud);
+  const isSynced = usePropertiesStore((state) => state.isSynced);
 
   // UI Store
   const activeTab = useUIStore((state) => state.activeTab);
@@ -69,6 +89,24 @@ const FlipCalculator: React.FC = () => {
   const sensitivityData = useSensitivityData(params, calculations);
   const earlyDiscountData = useEarlyDiscountData(params, calculations, customMetrics);
 
+  // Инициализация авторизации
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  // Синхронизация с облаком при авторизации
+  useEffect(() => {
+    if (initialized && user && !isSynced) {
+      // Проверяем, есть ли локальные данные для миграции
+      if (properties.length > 0) {
+        setShowMigrationPrompt(true);
+      } else {
+        // Просто синхронизируем с облаком
+        syncWithCloud();
+      }
+    }
+  }, [initialized, user, isSynced, properties.length, syncWithCloud]);
+
   // Миграция из старого localStorage (если есть)
   useEffect(() => {
     const migrateOldData = async () => {
@@ -84,6 +122,17 @@ const FlipCalculator: React.FC = () => {
     migrateOldData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Обработчик миграции локальных данных в облако
+  const handleMigrateToCloud = async () => {
+    await migrateLocalToCloud();
+    setShowMigrationPrompt(false);
+  };
+
+  const handleSkipMigration = () => {
+    syncWithCloud();
+    setShowMigrationPrompt(false);
+  };
+
   // Обработчик изменения параметров
   const handleParamChange = (key: keyof CalculatorParams, value: unknown) => {
     if (['propertyName', 'location', 'propertyType', 'dealType', 'renovationComments', 'propertyImages', 'paymentSchedule'].includes(key)) {
@@ -95,15 +144,23 @@ const FlipCalculator: React.FC = () => {
   };
 
   // Сохранение объекта
-  const handleSaveProperty = () => {
+  const handleSaveProperty = async () => {
     if (!params.propertyName.trim()) {
       alert('Пожалуйста, укажите название объекта');
       return;
     }
     try {
-      addProperty(params, calculations, coordinates);
-      alert('✅ Объект успешно сохранен!');
+      await addPropertyAsync(params, calculations, coordinates, tempPropertyId);
+      
+      // Генерируем новый ID для следующего объекта
+      setTempPropertyId(crypto.randomUUID());
+      
+      // Сбрасываем форму к дефолтным значениям ПОСЛЕ успешного сохранения
+      resetParams();
+      
+      alert('✅ Объект успешно сохранен! Форма очищена.');
     } catch (error: unknown) {
+      console.error('Save error:', error);
       const message = error instanceof Error ? error.message : 'Неизвестная ошибка';
       alert('❌ Ошибка сохранения: ' + message);
     }
@@ -176,13 +233,16 @@ const FlipCalculator: React.FC = () => {
               <div className="flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold">Калькулятор флиппинга недвижимости</h1>
               </div>
-              <button
-                onClick={handleExportDealSheet}
-                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm"
-              >
-                <Download size={18} />
-                <span className="hidden sm:inline">Экспорт PDF</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportDealSheet}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm"
+                >
+                  <Download size={18} />
+                  <span className="hidden sm:inline">Экспорт PDF</span>
+                </button>
+                <UserMenu onOpenAuth={() => setIsAuthModalOpen(true)} />
+              </div>
             </div>
             <p className="text-blue-100 text-sm sm:text-base">
               Интерактивный анализ сделки с мгновенным расчетом маржи и распределения долей
@@ -195,6 +255,7 @@ const FlipCalculator: React.FC = () => {
               <PropertyInfoForm
                 params={params}
                 coordinates={coordinates}
+                propertyId={user ? tempPropertyId : undefined}
                 onParamChange={handleParamChange}
                 onCoordinatesChange={setCoordinates}
               />
@@ -286,6 +347,42 @@ const FlipCalculator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Диалог миграции данных */}
+      {showMigrationPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
+              Синхронизация данных
+            </h3>
+            <p className="text-gray-600 mb-4">
+              У вас есть {properties.length} сохранённых объектов локально. 
+              Хотите загрузить их в облако для синхронизации между устройствами?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSkipMigration}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Пропустить
+              </button>
+              <button
+                onClick={handleMigrateToCloud}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Загрузить в облако
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно авторизации */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </div>
   );
 };

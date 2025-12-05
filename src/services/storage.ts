@@ -63,7 +63,7 @@ export const loadAllProperties = async (): Promise<SavedProperty[]> => {
     }
     return [];
   } catch (error) {
-    console.log('No saved properties yet');
+    // No saved properties yet
     return [];
   }
 };
