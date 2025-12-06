@@ -118,6 +118,8 @@ export default defineConfig({
     }),
   ],
   base: '/Investment_calculator/',
+  // Явно указываем SPA режим для fallback на index.html
+  appType: 'spa',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

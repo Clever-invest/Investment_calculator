@@ -49,7 +49,7 @@ describe('MetricsGrid', () => {
     render(<MetricsGrid calculations={mockCalculations} />);
     
     expect(screen.getByText('ROI')).toBeInTheDocument();
-    expect(screen.getByText('21.1%')).toBeInTheDocument();
+    expect(screen.getByText('21,1%')).toBeInTheDocument();
   });
   
   it('должен отображать IRR', () => {
@@ -57,7 +57,7 @@ describe('MetricsGrid', () => {
     
     // Label изменён на "IRR годовой"
     expect(screen.getByText(/IRR/)).toBeInTheDocument();
-    expect(screen.getByText('42.2%')).toBeInTheDocument();
+    expect(screen.getByText('42,2%')).toBeInTheDocument();
   });
   
   it('должен отображать срок в месяцах', () => {
@@ -88,8 +88,8 @@ describe('MetricsGrid', () => {
     
     render(<MetricsGrid calculations={lossCalculations} />);
     
-    expect(screen.getByText('-4.2%')).toBeInTheDocument();
-    expect(screen.getByText('-10.1%')).toBeInTheDocument();
+    expect(screen.getByText('-4,2%')).toBeInTheDocument();
+    expect(screen.getByText('-10,1%')).toBeInTheDocument();
   });
   
   it('должен обрабатывать нулевые значения', () => {
@@ -106,7 +106,7 @@ describe('MetricsGrid', () => {
     render(<MetricsGrid calculations={zeroCalculations} />);
     
     // ROI и IRR оба показывают 0.0%, используем getAllByText
-    const zeroPercentElements = screen.getAllByText('0.0%');
+    const zeroPercentElements = screen.getAllByText('0,0%');
     expect(zeroPercentElements.length).toBe(2); // ROI и IRR
     expect(screen.getByText('0 мес')).toBeInTheDocument();
   });
