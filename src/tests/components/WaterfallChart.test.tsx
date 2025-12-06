@@ -56,8 +56,9 @@ describe('WaterfallChart', () => {
 
   it('должен показывать минимальную цену продажи', () => {
     render(<WaterfallChart data={mockData} calculations={mockCalculations} />);
-    expect(screen.getByText(/Минимальная цена продажи:/)).toBeInTheDocument();
-    // breakEven = 1240000 -> форматируется как "1 240 000 AED"
+    // Текст изменён на "Мин. цена продажи:"
+    expect(screen.getByText(/Мин\. цена продажи:/)).toBeInTheDocument();
+    // breakEven = 1240000 -> форматируется как "1,240,000 AED"
     expect(screen.getByText(/1.*240.*000.*AED/)).toBeInTheDocument();
   });
 
@@ -68,8 +69,8 @@ describe('WaterfallChart', () => {
 
   it('должен рендерить контейнер для графика', () => {
     const { container } = render(<WaterfallChart data={mockData} calculations={mockCalculations} />);
-    // Проверяем что есть контейнер с нужной высотой для графика
-    const chartContainer = container.querySelector('.h-64');
+    // Адаптивные классы: h-[250px] sm:h-[320px] md:h-[400px]
+    const chartContainer = container.querySelector('[class*="h-["]');
     expect(chartContainer).toBeInTheDocument();
   });
 

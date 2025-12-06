@@ -1,65 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#3b82f6"/>
-      <stop offset="100%" style="stop-color:#1d4ed8"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10b981"/>
-      <stop offset="100%" style="stop-color:#059669"/>
-    </linearGradient>
-  </defs>
-  <!-- Background -->
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <!-- Calculator body -->
-  <rect x="96" y="64" width="320" height="384" rx="24" fill="white" opacity="0.95"/>
-  <!-- Screen -->
-  <rect x="120" y="88" width="272" height="80" rx="12" fill="#1e293b"/>
-  <!-- Display text -->
-  <text x="368" y="148" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#10b981" text-anchor="end">ROI</text>
-  <!-- Buttons grid -->
-  <g fill="#e2e8f0">
-    <rect x="120" y="192" width="56" height="48" rx="8"/>
-    <rect x="192" y="192" width="56" height="48" rx="8"/>
-    <rect x="264" y="192" width="56" height="48" rx="8"/>
-    <rect x="336" y="192" width="56" height="48" rx="8" fill="url(#accent)"/>
-    <rect x="120" y="256" width="56" height="48" rx="8"/>
-    <rect x="192" y="256" width="56" height="48" rx="8"/>
-    <rect x="264" y="256" width="56" height="48" rx="8"/>
-    <rect x="336" y="256" width="56" height="48" rx="8" fill="#f59e0b"/>
-    <rect x="120" y="320" width="56" height="48" rx="8"/>
-    <rect x="192" y="320" width="56" height="48" rx="8"/>
-    <rect x="264" y="320" width="56" height="48" rx="8"/>
-    <rect x="336" y="320" width="56" height="48" rx="8" fill="#f59e0b"/>
-    <rect x="120" y="384" width="128" height="48" rx="8"/>
-    <rect x="264" y="384" width="56" height="48" rx="8"/>
-    <rect x="336" y="384" width="56" height="48" rx="8" fill="url(#accent)"/>
-  </g>
-  <!-- Button labels -->
-  <g fill="#475569" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle">
-    <text x="148" y="224">7</text>
-    <text x="220" y="224">8</text>
-    <text x="292" y="224">9</text>
-    <text x="148" y="288">4</text>
-    <text x="220" y="288">5</text>
-    <text x="292" y="288">6</text>
-    <text x="148" y="352">1</text>
-    <text x="220" y="352">2</text>
-    <text x="292" y="352">3</text>
-    <text x="184" y="416">0</text>
-    <text x="292" y="416">.</text>
-  </g>
-  <!-- Operator labels -->
-  <g fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle">
-    <text x="364" y="224">%</text>
-    <text x="364" y="288">−</text>
-    <text x="364" y="352">+</text>
-    <text x="364" y="416">=</text>
-  </g>
-  <!-- Building icon overlay -->
-  <g transform="translate(380, 40)">
-    <path d="M0 80 L40 50 L80 80 L80 120 L0 120 Z" fill="white" opacity="0.9"/>
-    <rect x="15" y="90" width="20" height="30" fill="#3b82f6"/>
-    <rect x="45" y="90" width="20" height="20" fill="#3b82f6"/>
-  </g>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="24" height="24" rx="5" fill="url(#paint0_linear_2006_2)"/>
+<path d="M12 15.3424V12.3424M12 12.3424V9.34238M12 12.3424H9M12 12.3424H15M4 16.1425V10.7945C4 10.2602 4 9.99288 4.06497 9.74418C4.12255 9.52388 4.2173 9.31535 4.34521 9.12692C4.48955 8.91429 4.69064 8.73797 5.09277 8.38611L9.89436 4.18472C10.6398 3.53242 11.0126 3.20625 11.4324 3.0821C11.8026 2.97263 12.1972 2.97263 12.5674 3.0821C12.9875 3.20634 13.3608 3.53282 14.1074 4.18611L18.9074 8.38611C19.3096 8.73797 19.5102 8.91429 19.6546 9.12692C19.7825 9.31535 19.8775 9.52388 19.9351 9.74418C20 9.99278 20 10.2607 20 10.7945V16.146C20 17.2639 20 17.8234 19.7822 18.2509C19.5905 18.6272 19.2842 18.9329 18.9079 19.1246C18.4805 19.3424 17.9215 19.3424 16.8036 19.3424H7.19691C6.07899 19.3424 5.5192 19.3424 5.0918 19.1246C4.71547 18.9329 4.40973 18.6272 4.21799 18.2509C4 17.823 4 17.2626 4 16.1425Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<linearGradient id="paint0_linear_2006_2" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+<stop stop-color="#8B5CF6"/>
+<stop offset="1" stop-color="#3B82F6"/>
+</linearGradient>
+</defs>
 </svg>

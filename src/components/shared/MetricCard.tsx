@@ -1,4 +1,7 @@
 import { ReactNode } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export type MetricVariant = 'profit' | 'roi' | 'irr' | 'timing' | 'warning';
 
@@ -8,34 +11,46 @@ interface MetricCardProps {
   label: string;
   value: string | number;
   sublabel?: string;
+  badge?: string;
+  compact?: boolean;
   className?: string;
 }
 
-const variantStyles: Record<MetricVariant, { gradient: string; border: string; text: string }> = {
+const VARIANTS: Record<MetricVariant, { 
+  gradient: string; 
+  border: string; 
+  text: string;
+  badgeClass: string;
+}> = {
   profit: {
-    gradient: 'from-green-50 to-emerald-50',
-    border: 'border-green-200',
-    text: 'text-green-600',
+    gradient: 'bg-gradient-to-br from-profit-50 to-profit-100',
+    border: 'border-profit-200',
+    text: 'text-profit-600',
+    badgeClass: 'bg-profit-100 text-profit-600 border-profit-200',
   },
   roi: {
-    gradient: 'from-blue-50 to-indigo-50',
-    border: 'border-blue-200',
-    text: 'text-blue-600',
+    gradient: 'bg-gradient-to-br from-roi-50 to-roi-100',
+    border: 'border-roi-200',
+    text: 'text-roi-600',
+    badgeClass: 'bg-roi-100 text-roi-600 border-roi-200',
   },
   irr: {
-    gradient: 'from-purple-50 to-pink-50',
-    border: 'border-purple-200',
-    text: 'text-purple-600',
+    gradient: 'bg-gradient-to-br from-irr-50 to-irr-100',
+    border: 'border-irr-200',
+    text: 'text-irr-600',
+    badgeClass: 'bg-irr-100 text-irr-600 border-irr-200',
   },
   timing: {
-    gradient: 'from-orange-50 to-amber-50',
-    border: 'border-orange-200',
-    text: 'text-orange-600',
+    gradient: 'bg-gradient-to-br from-timing-50 to-timing-100',
+    border: 'border-timing-200',
+    text: 'text-timing-600',
+    badgeClass: 'bg-timing-100 text-timing-600 border-timing-200',
   },
   warning: {
-    gradient: 'from-yellow-50 to-amber-50',
-    border: 'border-yellow-200',
-    text: 'text-yellow-600',
+    gradient: 'bg-gradient-to-br from-warning-50 to-warning-100',
+    border: 'border-warning-200',
+    text: 'text-warning-600',
+    badgeClass: 'bg-warning-100 text-warning-600 border-warning-200',
   },
 };
 
@@ -45,38 +60,72 @@ export function MetricCard({
   label, 
   value, 
   sublabel,
+  badge,
+  compact = false,
   className = '' 
 }: MetricCardProps) {
-  const styles = variantStyles[variant];
+  const styles = VARIANTS[variant];
+  
+  // Compact mode для sticky header - вертикальная компоновка
+  if (compact) {
+    return (
+      <div 
+        role="status"
+        aria-label={`${label}: ${value}`}
+        className={cn(
+          'flex flex-col gap-0.5 px-3 py-2 rounded-xl border',
+          styles.gradient,
+          styles.border,
+          className
+        )}
+      >
+        <div className="flex items-center gap-1.5">
+          <span className={cn('w-3.5 h-3.5', styles.text)} aria-hidden="true">{icon}</span>
+          <span className="text-xs text-muted-foreground">{label}</span>
+        </div>
+        <span className={cn('text-sm font-bold truncate', styles.text)}>{value}</span>
+      </div>
+    );
+  }
   
   return (
-    <div 
-      className={`
-        bg-gradient-to-br ${styles.gradient} 
-        rounded-xl p-3 sm:p-4 
-        border ${styles.border}
-        ${className}
-      `}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <span className={styles.text}>{icon}</span>
-        <span className="text-xs sm:text-sm font-medium text-gray-600">
-          {label}
-        </span>
-      </div>
-      <div className={`text-xl sm:text-2xl font-bold ${styles.text}`}>
-        {value}
-      </div>
-      {sublabel && (
-        <div className="text-xs text-gray-500 mt-1">
-          {sublabel}
-        </div>
+    <Card 
+      role="status"
+      aria-label={`${label}: ${value}`}
+      className={cn(
+        styles.gradient,
+        styles.border,
+        'py-3 gap-2',
+        className
       )}
-    </div>
+    >
+      <CardHeader className="pb-0 px-3 sm:px-4">
+        <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2 text-muted-foreground">
+          <span className={styles.text} aria-hidden="true">{icon}</span>
+          {label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-3 sm:px-4 pt-0">
+        <div className={cn('text-xl sm:text-2xl font-bold', styles.text)}>
+          {value}
+        </div>
+        {sublabel && (
+          <p className="text-xs text-muted-foreground mt-1">{sublabel}</p>
+        )}
+        {badge && (
+          <Badge 
+            variant="outline" 
+            className={cn('mt-2', styles.badgeClass)}
+          >
+            {badge}
+          </Badge>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-// Компактная версия для мобильных
+// Компактная версия для мобильных (badge-style)
 interface MetricBadgeProps {
   variant: MetricVariant;
   label: string;
@@ -84,13 +133,20 @@ interface MetricBadgeProps {
 }
 
 export function MetricBadge({ variant, label, value }: MetricBadgeProps) {
-  const styles = variantStyles[variant];
+  const styles = VARIANTS[variant];
   
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${styles.gradient} ${styles.border} border`}>
-      <span className="text-xs text-gray-600">{label}:</span>
-      <span className={`text-sm font-bold ${styles.text}`}>{value}</span>
-    </div>
+    <Badge 
+      variant="outline"
+      className={cn(
+        'px-3 py-1.5 text-xs gap-2',
+        styles.gradient,
+        styles.border
+      )}
+    >
+      <span className="text-muted-foreground">{label}:</span>
+      <span className={cn('font-bold', styles.text)}>{value}</span>
+    </Badge>
   );
 }
 

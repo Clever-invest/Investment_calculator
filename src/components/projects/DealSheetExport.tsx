@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { Download } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatCurrency } from '../../utils/format';
 import type { CalculatorParams, Calculations, Coordinates } from '../../types/calculator';
 
@@ -26,10 +27,15 @@ export const exportDealSheetHTML = (
     townhouse: 'Таунхаус'
   }[params.propertyType] || params.propertyType;
 
+  const bedroomsLabel = (params.bedrooms ?? 1) === 0 ? 'Studio' : `${params.bedrooms ?? 1} BR`;
+  const bathroomsLabel = `${params.bathrooms ?? 1} Bath`;
+
   const formatted = {
     propertyName: params.propertyName || 'Без названия',
     location: params.location || '',
     propertyType: propertyTypeLabel,
+    bedrooms: bedroomsLabel,
+    bathrooms: bathroomsLabel,
     dealType: params.dealType,
     dealTypeLabel: params.dealType === 'offplan' ? '🏗️ Off-Plan' : '🏢 Вторичка',
     date: new Date().toLocaleString('ru-RU'),
@@ -94,7 +100,9 @@ export const exportDealSheetHTML = (
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
-    alert('❌ Не удалось открыть окно печати. Разрешите всплывающие окна для этого сайта.');
+    toast.error('Не удалось открыть окно печати', {
+      description: 'Разрешите всплывающие окна для этого сайта',
+    });
     return;
   }
 
@@ -128,7 +136,12 @@ export const exportDealSheetHTML = (
         .positive { color: #10b981; font-weight: 600; }
         .negative { color: #ef4444; font-weight: 600; }
         .footer { margin-top: 24px; padding-top: 16px; border-top: 2px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px; }
-        @media print { body { padding: 16px; background: white; } .container { box-shadow: none; } @page { margin: 1cm; } }
+        @media print { 
+          body { padding: 16px; background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; } 
+          .container { box-shadow: none; } 
+          .metric-card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+          @page { margin: 1cm; } 
+        }
       </style>
     </head>
     <body>
@@ -139,6 +152,7 @@ export const exportDealSheetHTML = (
           <div class="subtitle" style="margin-top: 5px;">
             ${formatted.location ? '📍 ' + formatted.location : ''} 
             ${formatted.propertyType ? '• ' + formatted.propertyType : ''}
+            • 🛏️ ${formatted.bedrooms} • 🚿 ${formatted.bathrooms}
             ${formatted.dealTypeLabel ? '• ' + formatted.dealTypeLabel : ''}
           </div>
           <div class="subtitle" style="margin-top: 5px; font-size: 12px;">
@@ -218,8 +232,13 @@ export const exportDealSheetHTML = (
 
   printWindow.document.close();
   setTimeout(() => {
-    try { printWindow.print(); }
-    catch { alert('Документ открыт в новом окне. Используйте Ctrl+P или Cmd+P для печати.'); }
+    try { 
+      printWindow.print(); 
+    } catch {
+      toast.info('Документ открыт в новом окне', {
+        description: 'Используйте Ctrl+P или Cmd+P для печати',
+      });
+    }
   }, 400);
 };
 

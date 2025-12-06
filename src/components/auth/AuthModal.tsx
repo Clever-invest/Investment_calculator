@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { haptic } from '@/utils/haptic';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -23,8 +34,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const { signIn, signUp, resetPassword, loading, error, clearError } = useAuth();
 
-  if (!isOpen) return null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -33,18 +42,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (mode === 'signin') {
       const { error } = await signIn(email, password);
       if (!error) {
+        haptic.success();
         onClose();
         resetForm();
+      } else {
+        haptic.error();
       }
     } else if (mode === 'signup') {
       const { error } = await signUp(email, password, fullName);
       if (!error) {
+        haptic.success();
         setMessage('Проверьте email для подтверждения регистрации');
+      } else {
+        haptic.error();
       }
     } else if (mode === 'reset') {
       const { error } = await resetPassword(email);
       if (!error) {
+        haptic.success();
         setMessage('Инструкции по сбросу пароля отправлены на email');
+      } else {
+        haptic.error();
       }
     }
   };
@@ -62,41 +80,44 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     resetForm();
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+      resetForm();
+    }
+  };
+
+  const getTitle = () => {
+    switch (mode) {
+      case 'signin': return 'Вход в аккаунт';
+      case 'signup': return 'Создать аккаунт';
+      case 'reset': return 'Сброс пароля';
+    }
+  };
+
+  const getDescription = () => {
+    switch (mode) {
+      case 'signin': return 'Войдите для синхронизации ваших объектов';
+      case 'signup': return 'Зарегистрируйтесь для сохранения в облаке';
+      case 'reset': return 'Введите email для восстановления доступа';
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X size={20} />
-        </button>
-
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {mode === 'signin' && 'Вход в аккаунт'}
-            {mode === 'signup' && 'Создать аккаунт'}
-            {mode === 'reset' && 'Сброс пароля'}
-          </h2>
-          <p className="text-gray-500 mt-2">
-            {mode === 'signin' && 'Войдите для синхронизации ваших объектов'}
-            {mode === 'signup' && 'Зарегистрируйтесь для сохранения в облаке'}
-            {mode === 'reset' && 'Введите email для восстановления доступа'}
-          </p>
-        </div>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center text-2xl">
+            {getTitle()}
+          </DialogTitle>
+          <DialogDescription className="text-center">
+            {getDescription()}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-destructive">
             <AlertCircle size={18} />
             <span className="text-sm">{error}</span>
           </div>
@@ -104,7 +125,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Success message */}
         {message && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
             {message}
           </div>
         )}
@@ -112,96 +133,100 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Имя
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Имя</Label>
               <div className="relative">
                 <User
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
-                <input
+                <Input
+                  id="fullName"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Ваше имя"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="pl-10"
+                  autoComplete="name"
                 />
               </div>
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
             <div className="relative">
               <Mail
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
-              <input
+              <Input
+                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="pl-10"
+                autoComplete="email"
+                inputMode="email"
               />
             </div>
           </div>
 
           {mode !== 'reset' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Пароль
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="password">Пароль</Label>
               <div className="relative">
                 <Lock
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
-                <input
+                <Input
+                  id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="pl-10"
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                 />
               </div>
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full"
+            size="lg"
           >
-            {loading && <Loader2 size={18} className="animate-spin" />}
+            {loading && <Loader2 size={18} className="animate-spin mr-2" />}
             {mode === 'signin' && 'Войти'}
             {mode === 'signup' && 'Создать аккаунт'}
             {mode === 'reset' && 'Отправить инструкции'}
-          </button>
+          </Button>
         </form>
 
         {/* Footer links */}
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-muted-foreground">
           {mode === 'signin' && (
             <>
               <button
+                type="button"
                 onClick={() => switchMode('reset')}
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
               >
                 Забыли пароль?
               </button>
               <div className="mt-3">
                 Нет аккаунта?{' '}
                 <button
+                  type="button"
                   onClick={() => switchMode('signup')}
-                  className="text-blue-600 hover:underline font-medium"
+                  className="text-primary hover:underline font-medium"
                 >
                   Зарегистрироваться
                 </button>
@@ -212,8 +237,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               Уже есть аккаунт?{' '}
               <button
+                type="button"
                 onClick={() => switchMode('signin')}
-                className="text-blue-600 hover:underline font-medium"
+                className="text-primary hover:underline font-medium"
               >
                 Войти
               </button>
@@ -221,15 +247,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
           {mode === 'reset' && (
             <button
+              type="button"
               onClick={() => switchMode('signin')}
-              className="text-blue-600 hover:underline"
+              className="text-primary hover:underline"
             >
               ← Вернуться к входу
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

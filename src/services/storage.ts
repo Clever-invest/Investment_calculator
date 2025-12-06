@@ -4,10 +4,25 @@
 
 import type { SavedProperty } from '../types/calculator';
 
+// Интерфейс для storage
+interface StorageInterface {
+  set: (key: string, value: string) => Promise<boolean>;
+  get: (key: string) => Promise<{ value: string } | null>;
+  list: (prefix: string) => Promise<{ keys: string[] }>;
+  delete: (key: string) => Promise<boolean>;
+}
+
+// Расширение Window для storage
+declare global {
+  interface Window {
+    storage?: StorageInterface;
+  }
+}
+
 // Fallback storage на localStorage
 const initStorage = () => {
   if (typeof window !== 'undefined' && !window.storage) {
-    (window as any).storage = {
+    window.storage = {
       async set(key: string, value: string) {
         localStorage.setItem(key, value);
         return true;
@@ -33,15 +48,8 @@ initStorage();
 
 const PROPERTY_PREFIX = 'property:';
 
-interface StorageInterface {
-  set: (key: string, value: string) => Promise<boolean>;
-  get: (key: string) => Promise<{ value: string } | null>;
-  list: (prefix: string) => Promise<{ keys: string[] }>;
-  delete: (key: string) => Promise<boolean>;
-}
-
 const getStorage = (): StorageInterface => {
-  return (window as any).storage;
+  return window.storage!;
 };
 
 export const loadAllProperties = async (): Promise<SavedProperty[]> => {
@@ -62,7 +70,7 @@ export const loadAllProperties = async (): Promise<SavedProperty[]> => {
       return properties.filter((p): p is SavedProperty => p !== null);
     }
     return [];
-  } catch (error) {
+  } catch {
     // No saved properties yet
     return [];
   }

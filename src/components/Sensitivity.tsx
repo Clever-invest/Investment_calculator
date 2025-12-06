@@ -51,8 +51,8 @@ export const Sensitivity: React.FC<SensitivityProps> = ({ sensitivity }) => {
             />
             <YAxis tickFormatter={(val) => `${(val * 100).toFixed(1)}%`} />
             <Tooltip 
-              formatter={(value: any) => fmtPct(value * 100)}
-              labelFormatter={(label) => fmtMoney(label)}
+              formatter={(value: number) => fmtPct(value * 100)}
+              labelFormatter={(label: number) => fmtMoney(label)}
             />
             <Line type="monotone" dataKey="irrAnnual" stroke="#3b82f6" strokeWidth={2} name="IRR" />
             <Line type="monotone" dataKey="roiPeriod" stroke="#10b981" strokeWidth={2} name="ROI" />
@@ -93,7 +93,7 @@ export const Sensitivity: React.FC<SensitivityProps> = ({ sensitivity }) => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="monthsTotal" label={{ value: 'Месяцы', position: 'insideBottom', offset: -5 }} />
             <YAxis tickFormatter={(val) => `${(val * 100).toFixed(1)}%`} />
-            <Tooltip formatter={(value: any) => fmtPct(value * 100)} />
+            <Tooltip formatter={(value: number) => fmtPct(value * 100)} />
             <Bar dataKey="irrAnnual" fill="#3b82f6" name="IRR" />
           </BarChart>
         </ResponsiveContainer>

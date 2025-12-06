@@ -1,5 +1,6 @@
 /**
  * Форма информации об объекте недвижимости
+ * Мигрирован на shadcn/ui (Этап 2)
  */
 
 import React from 'react';
@@ -7,19 +8,25 @@ import { LocationSearch } from './LocationSearch';
 import { ImageUploader } from './ImageUploader';
 import { formatArea } from '../../utils/format';
 import type { CalculatorParams, Coordinates, PropertyType } from '../../types/calculator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Building2, Home, Warehouse, Bed, Bath, Minus, Plus } from 'lucide-react';
 
 interface PropertyInfoFormProps {
   params: CalculatorParams;
   coordinates: Coordinates | null;
   propertyId?: string; // ID объекта для cloud storage (при редактировании)
-  onParamChange: (key: keyof CalculatorParams, value: any) => void;
+  onParamChange: (key: keyof CalculatorParams, value: CalculatorParams[keyof CalculatorParams]) => void;
   onCoordinatesChange: (coords: Coordinates | null) => void;
 }
 
-const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
-  { value: 'apartment', label: '🏢 Апартаменты' },
-  { value: 'villa', label: '🏠 Вилла' },
-  { value: 'townhouse', label: '🏘️ Таунхауз' }
+const PROPERTY_TYPES: { value: PropertyType; label: string; icon: React.ReactNode }[] = [
+  { value: 'apartment', label: 'Апартаменты', icon: <Building2 className="h-4 w-4" /> },
+  { value: 'villa', label: 'Вилла', icon: <Home className="h-4 w-4" /> },
+  { value: 'townhouse', label: 'Таунхауз', icon: <Warehouse className="h-4 w-4" /> }
 ];
 
 export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
@@ -30,20 +37,21 @@ export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
   onCoordinatesChange
 }) => {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
-      <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">Информация об объекте</h2>
-
-      <div className="space-y-3 sm:space-y-4">
+    <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-0 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-bold">Информация об объекте</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         {/* Название объекта */}
-        <div>
-          <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">Название объекта</label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="propertyName">Название объекта</Label>
+          <Input
+            id="propertyName"
             type="text"
             value={params.propertyName}
             onChange={(e) => onParamChange('propertyName', e.target.value)}
             placeholder="Marina Bay Tower 3, Apt 2501"
-            className="w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            aria-label="Название объекта"
+            enterKeyHint="next"
           />
         </div>
 
@@ -56,54 +64,130 @@ export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
         />
 
         {/* Тип объекта */}
-        <div>
-          <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">Тип объекта</label>
+        <div className="space-y-2">
+          <Label>Тип объекта</Label>
           <div className="grid grid-cols-3 gap-2">
             {PROPERTY_TYPES.map(type => (
-              <button
+              <Button
                 key={type.value}
                 type="button"
+                variant={params.propertyType === type.value ? "default" : "outline"}
                 onClick={() => onParamChange('propertyType', type.value)}
-                className={`px-2 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
-                  params.propertyType === type.value
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={cn(
+                  "h-auto py-2 px-3 flex flex-col gap-1 items-center",
+                  params.propertyType === type.value && "shadow-md"
+                )}
               >
-                {type.label}
-              </button>
+                {type.icon}
+                <span className="text-xs">{type.label}</span>
+              </Button>
             ))}
+          </div>
+        </div>
+
+        {/* Спальни и ванные */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Спальни */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <Bed className="h-4 w-4" />
+              <span>Спальни</span>
+            </Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => onParamChange('bedrooms', Math.max(0, (params.bedrooms ?? 1) - 1))}
+                disabled={(params.bedrooms ?? 1) <= 0}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <div className="flex-1 text-center font-bold text-lg">
+                {(params.bedrooms ?? 1) === 0 ? 'Studio' : (params.bedrooms ?? 1)}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => onParamChange('bedrooms', (params.bedrooms ?? 1) + 1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Ванные */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <Bath className="h-4 w-4" />
+              <span>Ванные</span>
+            </Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => onParamChange('bathrooms', Math.max(1, (params.bathrooms ?? 1) - 1))}
+                disabled={(params.bathrooms ?? 1) <= 1}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <div className="flex-1 text-center font-bold text-lg">
+                {params.bathrooms ?? 1}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => onParamChange('bathrooms', (params.bathrooms ?? 1) + 1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Площадь */}
         <div className="space-y-3">
-          <div>
-            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">
-              Площадь помещения: {formatArea(params.unitAreaSqft)}
-            </label>
-            <input
-              type="number"
+          <div className="space-y-2">
+            <Label className="flex justify-between">
+              <span>Площадь помещения</span>
+              <span className="text-muted-foreground">{formatArea(params.unitAreaSqft)}</span>
+            </Label>
+            <Input
+              type="text"
+              inputMode="decimal"
+              enterKeyHint="next"
               value={params.unitAreaSqft || ''}
-              onChange={(e) => onParamChange('unitAreaSqft', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d]/g, '');
+                onParamChange('unitAreaSqft', value === '' ? 0 : parseInt(value));
+              }}
               placeholder="Площадь в sqft"
-              inputMode="numeric"
             />
           </div>
 
           {(params.propertyType === 'villa' || params.propertyType === 'townhouse') && (
-            <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 block">
-                Площадь участка: {formatArea(params.plotAreaSqft)}
-              </label>
-              <input
-                type="number"
+            <div className="space-y-2">
+              <Label className="flex justify-between">
+                <span>Площадь участка</span>
+                <span className="text-muted-foreground">{formatArea(params.plotAreaSqft)}</span>
+              </Label>
+              <Input
+                type="text"
+                inputMode="decimal"
+                enterKeyHint="next"
                 value={params.plotAreaSqft || ''}
-                onChange={(e) => onParamChange('plotAreaSqft', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^\d]/g, '');
+                  onParamChange('plotAreaSqft', value === '' ? 0 : parseInt(value));
+                }}
                 placeholder="Площадь участка в sqft"
-                inputMode="numeric"
               />
             </div>
           )}
@@ -118,39 +202,39 @@ export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
         />
 
         {/* Тип сделки */}
-        <div>
-          <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">Тип сделки</label>
+        <div className="space-y-2">
+          <Label>Тип сделки</Label>
           <div className="grid grid-cols-2 gap-2">
-            <button
+            <Button
               type="button"
+              variant={params.dealType === 'secondary' ? "default" : "outline"}
               onClick={() => onParamChange('dealType', 'secondary')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                params.dealType === 'secondary'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={cn(
+                "h-auto py-3",
+                params.dealType === 'secondary' && "shadow-md"
+              )}
             >
               🏢 Вторичка
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant={params.dealType === 'offplan' ? "default" : "outline"}
               onClick={() => onParamChange('dealType', 'offplan')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                params.dealType === 'offplan'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={cn(
+                "h-auto py-3",
+                params.dealType === 'offplan' && "bg-purple-600 hover:bg-purple-700 shadow-md"
+              )}
             >
               🏗️ Off-Plan
-            </button>
+            </Button>
           </div>
           {params.dealType === 'offplan' && (
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               💡 Офф-план: учитывается фактическая оплата и план платежей
             </p>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

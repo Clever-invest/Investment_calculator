@@ -3,8 +3,12 @@
  */
 
 import React from 'react';
+import { Plus, X } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import type { PaymentScheduleItem } from '../../types/calculator';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface PaymentScheduleEditorProps {
   schedule: PaymentScheduleItem[];
@@ -37,51 +41,57 @@ export const PaymentScheduleEditor: React.FC<PaymentScheduleEditorProps> = ({
 
   return (
     <div className="border-t pt-3">
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-xs sm:text-sm font-medium text-gray-700">
+      <div className="flex items-center justify-between mb-3">
+        <Label>
           📅 План платежей ({schedule.length})
-        </label>
-        <button
+        </Label>
+        <Button
           type="button"
+          variant="default"
+          size="sm"
           onClick={addPayment}
-          className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
+          className="bg-green-600 hover:bg-green-700"
         >
-          + Добавить
-        </button>
+          <Plus className="w-4 h-4 mr-1" />
+          Добавить
+        </Button>
       </div>
 
       {schedule.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {schedule.map((payment, index) => (
-            <div key={index} className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-gray-600">#{index + 1}</span>
-                <button
+            <div key={index} className="bg-muted/50 p-3 rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => removePayment(index)}
-                  className="ml-auto text-red-500 hover:text-red-700 text-xs"
+                  className="ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
-                  ✕
-                </button>
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Сумма</label>
-                  <input
-                    type="number"
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Сумма</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    enterKeyHint="next"
                     value={payment.amount}
                     onChange={(e) => updatePayment(index, 'amount', e.target.value)}
-                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                     placeholder="Сумма"
+                    className="text-right"
                   />
                 </div>
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Дата</label>
-                  <input
+                <div className="space-y-1">
+                  <Label className="text-xs">Дата</Label>
+                  <Input
                     type="date"
                     value={payment.date}
                     onChange={(e) => updatePayment(index, 'date', e.target.value)}
-                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -91,15 +101,15 @@ export const PaymentScheduleEditor: React.FC<PaymentScheduleEditorProps> = ({
       )}
 
       {schedule.length === 0 && (
-        <p className="text-xs text-gray-500 text-center py-2">
-          Нет платежей. Нажмите "+Добавить"
+        <p className="text-sm text-muted-foreground text-center py-4">
+          Нет платежей. Нажмите "Добавить"
         </p>
       )}
 
       {schedule.length > 0 && (
-        <div className="mt-2 p-2 bg-purple-50 rounded border border-purple-200">
-          <div className="text-xs text-purple-800">
-            <strong>Итого по плану:</strong> {formatCurrency(totalAmount)}
+        <div className="mt-3 p-3 bg-irr-50 rounded-lg border border-irr-200">
+          <div className="text-sm text-irr-600 font-medium">
+            Итого по плану: {formatCurrency(totalAmount)}
           </div>
         </div>
       )}

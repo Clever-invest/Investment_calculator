@@ -63,6 +63,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallback: '/Investment_calculator/offline.html',
+        navigateFallbackDenylist: [/^\/api/, /\.[^/]+$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.openstreetmap\.org\/.*/i,

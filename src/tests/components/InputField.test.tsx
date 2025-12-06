@@ -156,7 +156,10 @@ describe('InputField', () => {
       />
     );
     
-    expect(screen.getByTitle('Dubai Land Department fee')).toBeInTheDocument();
+    // shadcn Tooltip использует Info иконку, а не title атрибут
+    // Проверяем наличие иконки info (SVG с классом lucide-info)
+    const infoIcon = document.querySelector('svg.lucide-info');
+    expect(infoIcon).toBeInTheDocument();
   });
   
   it('должен обрабатывать пустой ввод как 0', () => {

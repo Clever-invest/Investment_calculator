@@ -33,13 +33,24 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenAuth }) => {
   // Not authenticated - show sign in button
   if (!isAuthenticated) {
     return (
-      <button
-        onClick={onOpenAuth}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
-      >
-        <User size={16} />
-        <span>Войти</span>
-      </button>
+      <>
+        {/* Mobile: компактная иконка */}
+        <button
+          onClick={onOpenAuth}
+          className="flex sm:hidden items-center justify-center w-9 h-9 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+          title="Войти"
+        >
+          <User size={18} />
+        </button>
+        {/* Desktop: полная кнопка */}
+        <button
+          onClick={onOpenAuth}
+          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium"
+        >
+          <User size={16} />
+          <span>Войти</span>
+        </button>
+      </>
     );
   }
 
@@ -51,17 +62,17 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenAuth }) => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+        className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 sm:bg-gray-100 sm:hover:bg-gray-200 rounded-lg transition-colors"
       >
-        <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-medium">
           {displayName.charAt(0).toUpperCase()}
         </div>
         <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden sm:block">
           {displayName}
         </span>
         <ChevronDown
-          size={16}
-          className={`text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          size={14}
+          className={`text-white sm:text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''} hidden sm:block`}
         />
       </button>
 

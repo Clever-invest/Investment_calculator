@@ -72,11 +72,11 @@ export const ResetPasswordPage: React.FC = () => {
       setTimeout(() => {
         navigate('/');
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Update password error:', error);
       setMessage({ 
         type: 'error', 
-        text: error.message || 'Ошибка при смене пароля' 
+        text: error instanceof Error ? error.message : 'Ошибка при смене пароля' 
       });
     } finally {
       setLoading(false);

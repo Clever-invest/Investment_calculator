@@ -9,12 +9,12 @@ import type { CustomMetric } from '../types/calculator';
 export type TabId = 'overview' | 'formula' | 'sensitivity' | 'early' | 'saved';
 
 // Информация о вкладках
-export const TABS: { id: TabId; label: string }[] = [
-  { id: 'overview', label: 'Водопад' },
-  { id: 'formula', label: 'Детальный расчет' },
-  { id: 'sensitivity', label: 'Сенситивность' },
-  { id: 'early', label: 'Ранняя продажа' },
-  { id: 'saved', label: 'Сохраненные' },
+export const TABS: { id: TabId; label: string; shortLabel: string }[] = [
+  { id: 'overview', label: 'Водопад', shortLabel: 'Обзор' },
+  { id: 'formula', label: 'Детальный расчет', shortLabel: 'Расчёт' },
+  { id: 'sensitivity', label: 'Сенситивность', shortLabel: 'Анализ' },
+  { id: 'early', label: 'Ранняя продажа', shortLabel: 'Продажа' },
+  { id: 'saved', label: 'Сохраненные', shortLabel: 'Объекты' },
 ];
 
 interface UIState {

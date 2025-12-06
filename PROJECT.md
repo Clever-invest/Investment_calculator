@@ -1,0 +1,167 @@
+# Flip Calculator — Investment Property Calculator
+
+> **Версия:** 2.1.0  
+> **Последнее обновление:** 6 декабря 2025  
+> **Статус:** ✅ Production Ready
+
+---
+
+## 📊 Общий прогресс: 100%
+
+Проект полностью завершён и готов к production.
+
+---
+
+## ✅ Выполненные этапы
+
+### Этап 1: Рефакторинг App.jsx ✅
+- App.tsx: 1984 → ~500 строк (сокращение 75%)
+- Вынесены компоненты форм, результатов, проектов
+- Модульная архитектура
+
+### Этап 2: Миграция на TypeScript ✅
+- 100% файлов на TypeScript
+- Полные типы для калькулятора, координат, расчётов
+- Строгая типизация Supabase (database.ts)
+
+### Этап 3: Tailwind CSS ✅
+- Локальная установка (без CDN)
+- Кастомные цвета для метрик (profit, roi, irr, timing)
+- shadcn/ui компоненты
+
+### Этап 4: State Management ✅
+- Zustand stores с persist
+- calculatorStore, propertiesStore, uiStore, authStore
+- Синхронизация с облаком
+
+### Этап 5: Тестирование ✅
+- Unit тесты (Vitest)
+- E2E тесты (Playwright)
+- CI/CD настроен
+
+### Этап 6: Backend интеграция ✅
+- Supabase Auth (email/password)
+- PostgreSQL с RLS политиками
+- Supabase Storage для изображений
+- Realtime синхронизация
+
+### Этап 7: PWA и оптимизация ✅
+- Service Worker (Workbox)
+- Offline-first architecture
+- Code splitting, lazy loading
+- Skeleton loaders
+
+---
+
+## 🚧 Последние изменения (6 декабря 2025)
+
+### Авторизация и роутинг
+- [x] ProtectedRoute — защита роутов от неавторизованных
+- [x] AuthPage — полноэкранная страница входа
+- [x] `/` теперь показывает калькулятор (требует авторизации)
+- [x] `/login` — страница входа
+- [x] `/v1` редиректит на `/`
+- [x] Удалён HomePage.tsx (лендинг больше не нужен)
+
+### UI/UX мобильная версия
+- [x] MetricsGrid — сетка 2x2 вместо горизонтального скролла
+- [x] MetricCard — вертикальная компоновка (лейбл сверху, значение снизу)
+- [x] DetailedBreakdown — сокращённые тексты для мобильных
+- [x] Формулы скрыты на мобильных (только результаты)
+- [x] BottomNav — таб "Ещё" → "Скидки"
+
+### Новые поля объекта
+- [x] Добавлены `bedrooms` и `bathrooms` в CalculatorParams
+- [x] UI счётчики +/- в PropertyInfoForm
+- [x] 0 спален = "Studio"
+- [x] Данные сохраняются в Supabase (JSONB params)
+- [x] Отображение в PDF экспорте (🛏️ 2 BR • 🚿 1 Bath)
+
+---
+
+## 🏗️ Архитектура
+
+```
+src/
+├── components/
+│   ├── auth/           # AuthModal, UserMenu, ProtectedRoute
+│   ├── forms/          # PropertyInfoForm, DealParamsForm, ImageUploader
+│   ├── layout/         # BottomNav
+│   ├── projects/       # SavedPropertiesList, DealSheetExport
+│   ├── results/        # MetricsGrid, WaterfallChart, DetailedBreakdown
+│   ├── shared/         # MetricCard, Skeleton, OfflineIndicator
+│   └── ui/             # shadcn/ui компоненты
+├── hooks/              # useCalculations, useAuth, useMediaQuery
+├── pages/              # AuthPage, ResetPasswordPage
+├── services/           # propertiesApi, storage, location
+├── stores/             # Zustand: calculator, properties, ui, auth
+├── types/              # calculator.ts, database.ts
+└── utils/              # format, haptic
+```
+
+---
+
+## 🔧 Технологический стек
+
+| Категория | Технология |
+|-----------|------------|
+| Frontend | React 18, TypeScript, Vite |
+| Styling | Tailwind CSS, shadcn/ui |
+| State | Zustand + persist |
+| Backend | Supabase (Auth, DB, Storage) |
+| Charts | Recharts |
+| Maps | OpenStreetMap + Leaflet |
+| PWA | Workbox, vite-plugin-pwa |
+| Testing | Vitest, Playwright |
+
+---
+
+## 📝 База данных Supabase
+
+### Таблица `properties`
+```sql
+id              UUID PRIMARY KEY
+user_id         UUID REFERENCES auth.users
+name            TEXT NOT NULL
+location        TEXT
+deal_type       TEXT DEFAULT 'secondary'
+params          JSONB -- все CalculatorParams включая bedrooms, bathrooms
+calculations    JSONB
+coordinates     JSONB
+images          TEXT[]
+notes           TEXT
+is_archived     BOOLEAN DEFAULT false
+created_at      TIMESTAMPTZ
+updated_at      TIMESTAMPTZ
+```
+
+**Миграции не требуются** — новые поля (bedrooms, bathrooms) автоматически сохраняются в JSONB `params`.
+
+---
+
+## 🚀 Запуск
+
+```bash
+# Установка
+npm install
+
+# Разработка
+npm run dev
+
+# Сборка
+npm run build
+
+# Тесты
+npm test
+npm run test:e2e
+```
+
+---
+
+## 📌 Следующие шаги (опционально)
+
+- [ ] Добавить Google OAuth
+- [ ] Push-уведомления
+- [ ] Сравнение объектов side-by-side
+- [ ] Экспорт в Excel
+- [ ] Мультиязычность (EN/RU/AR)

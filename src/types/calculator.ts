@@ -20,6 +20,8 @@ export interface CalculatorParams {
   location: string;
   propertyType: PropertyType;
   dealType: DealType;
+  bedrooms: number;
+  bathrooms: number;
   unitAreaSqft: number;
   plotAreaSqft: number;
   propertyImages: string[];
@@ -126,6 +128,8 @@ export const DEFAULT_PARAMS: CalculatorParams = {
   location: '',
   propertyType: 'apartment',
   dealType: 'secondary',
+  bedrooms: 1,
+  bathrooms: 1,
   unitAreaSqft: 0,
   plotAreaSqft: 0,
   propertyImages: [],

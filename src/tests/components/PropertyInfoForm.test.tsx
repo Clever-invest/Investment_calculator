@@ -115,15 +115,18 @@ describe('PropertyInfoForm', () => {
     const apartmentParams = { ...DEFAULT_PARAMS, propertyType: 'apartment' as const };
     render(<PropertyInfoForm {...defaultProps} params={apartmentParams} />);
     
-    const apartmentButton = screen.getByText(/Апартаменты/);
-    expect(apartmentButton).toHaveClass('bg-blue-600');
+    const apartmentButton = screen.getByText(/Апартаменты/).closest('button');
+    // shadcn Button с variant="default" использует CSS переменные, а не bg-blue-600
+    // Проверяем что кнопка не имеет variant="outline" (т.е. активна)
+    expect(apartmentButton).not.toHaveClass('border-input');
   });
 
   it('должен выделять активный тип сделки', () => {
     const secondaryParams = { ...DEFAULT_PARAMS, dealType: 'secondary' as const };
     render(<PropertyInfoForm {...defaultProps} params={secondaryParams} />);
     
-    const secondaryButton = screen.getByText(/Вторичка/);
-    expect(secondaryButton).toHaveClass('bg-blue-600');
+    const secondaryButton = screen.getByText(/Вторичка/).closest('button');
+    // shadcn Button с variant="default" активен, не имеет border-input
+    expect(secondaryButton).not.toHaveClass('border-input');
   });
 });

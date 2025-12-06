@@ -1,7 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, Key, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Key, Trash2, CheckCircle, AlertCircle, Moon, Sun, Monitor } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
+
+// Компонент выбора темы
+interface ThemeOptionProps {
+  icon: React.ReactNode;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+const ThemeOption: React.FC<ThemeOptionProps> = ({ icon, label, isActive, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={isActive}
+    className={cn(
+      'flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all',
+      'min-h-[72px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      isActive
+        ? 'border-primary bg-primary/10 text-primary'
+        : 'border-transparent bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+    )}
+  >
+    {icon}
+    <span className="text-xs font-medium">{label}</span>
+  </button>
+);
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -10,7 +57,9 @@ interface SettingsModalProps {
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+  const isMobile = useIsMobile();
+  const { theme, setTheme, isDark } = useTheme();
+  const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'security'>('profile');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -23,8 +72,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       setMessage(null); // Сбрасываем сообщение при открытии
     }
   }, [isOpen, user]);
-
-  if (!isOpen) return null;
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,156 +111,229 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       if (error) throw error;
 
       setMessage({ type: 'success', text: 'Письмо для сброса пароля отправлено на ' + user.email });
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Ошибка отправки письма' });
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold text-gray-900">Настройки</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+  const content = (
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'appearance' | 'security')} className="w-full">
+      <TabsList className="grid !w-full grid-cols-3">
+        <TabsTrigger value="profile">Профиль</TabsTrigger>
+        <TabsTrigger value="appearance">Вид</TabsTrigger>
+        <TabsTrigger value="security">Безопасность</TabsTrigger>
+      </TabsList>
+      
+      <div className="mt-4">
+        {/* Message */}
+        {message && (
+          <div
+            className={cn(
+              'mb-4 p-3 rounded-lg flex items-center gap-2',
+              message.type === 'success'
+                ? 'bg-green-50 text-green-700'
+                : 'bg-destructive/10 text-destructive'
+            )}
           >
-            <X size={20} className="text-gray-500" />
-          </button>
-        </div>
+            {message.type === 'success' ? (
+              <CheckCircle size={16} />
+            ) : (
+              <AlertCircle size={16} />
+            )}
+            <span className="text-sm">{message.text}</span>
+          </div>
+        )}
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'profile'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Профиль
-          </button>
-          <button
-            onClick={() => setActiveTab('security')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'security'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Безопасность
-          </button>
-        </div>
+        <TabsContent value="profile" className="mt-0">
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
+            {/* Email (read-only) */}
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg text-muted-foreground">
+                <Mail size={16} />
+                <span className="text-sm">{user?.email}</span>
+              </div>
+            </div>
 
-        {/* Content */}
-        <div className="p-4">
-          {/* Message */}
-          {message && (
-            <div
-              className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${
-                message.type === 'success'
-                  ? 'bg-green-50 text-green-700'
-                  : 'bg-red-50 text-red-700'
-              }`}
+            {/* Display name */}
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Имя</Label>
+              <div className="relative">
+                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="displayName"
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Ваше имя"
+                  className="pl-10"
+                  autoComplete="name"
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full"
             >
-              {message.type === 'success' ? (
-                <CheckCircle size={16} />
-              ) : (
-                <AlertCircle size={16} />
-              )}
-              <span className="text-sm">{message.text}</span>
-            </div>
-          )}
+              {loading ? 'Сохранение...' : 'Сохранить изменения'}
+            </Button>
+          </form>
+        </TabsContent>
 
-          {activeTab === 'profile' && (
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              {/* Email (read-only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-gray-600">
-                  <Mail size={16} />
-                  <span className="text-sm">{user?.email}</span>
+        <TabsContent value="appearance" className="mt-0 space-y-4">
+          {/* Theme selector */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                {isDark ? (
+                  <Moon size={20} className="text-primary" />
+                ) : (
+                  <Sun size={20} className="text-primary" />
+                )}
+                <div>
+                  <CardTitle className="text-base">Тема оформления</CardTitle>
+                  <CardDescription>
+                    Выберите предпочитаемую цветовую схему
+                  </CardDescription>
                 </div>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Theme options */}
+              <div className="grid grid-cols-3 gap-2">
+                <ThemeOption
+                  icon={<Sun size={18} />}
+                  label="Светлая"
+                  isActive={theme === 'light'}
+                  onClick={() => setTheme('light')}
+                />
+                <ThemeOption
+                  icon={<Moon size={18} />}
+                  label="Тёмная"
+                  isActive={theme === 'dark'}
+                  onClick={() => setTheme('dark')}
+                />
+                <ThemeOption
+                  icon={<Monitor size={18} />}
+                  label="Система"
+                  isActive={theme === 'system'}
+                  onClick={() => setTheme('system')}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-              {/* Display name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Имя
-                </label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Ваше имя"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  />
+          {/* Quick toggle */}
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Moon size={20} className="text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Тёмный режим</p>
+                    <p className="text-xs text-muted-foreground">Быстрое переключение</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={isDark}
+                  onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                  aria-label="Переключить тёмную тему"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Accessibility info */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-4">
+              <p className="text-sm text-muted-foreground">
+                💡 При выборе "Система" тема автоматически меняется в зависимости от настроек вашего устройства.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="mt-0 space-y-4">
+          {/* Reset password */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                <Key size={20} className="text-muted-foreground" />
+                <div>
+                  <CardTitle className="text-base">Сменить пароль</CardTitle>
+                  <CardDescription>
+                    Мы отправим ссылку для сброса пароля на ваш email
+                  </CardDescription>
                 </div>
               </div>
-
-              <button
-                type="submit"
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="secondary"
+                onClick={handleResetPassword}
                 disabled={loading}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                size="sm"
               >
-                {loading ? 'Сохранение...' : 'Сохранить изменения'}
-              </button>
-            </form>
-          )}
+                {loading ? 'Отправка...' : 'Отправить ссылку'}
+              </Button>
+            </CardContent>
+          </Card>
 
-          {activeTab === 'security' && (
-            <div className="space-y-4">
-              {/* Reset password */}
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <Key size={20} className="text-gray-400 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">Сменить пароль</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Мы отправим ссылку для сброса пароля на ваш email
-                    </p>
-                    <button
-                      onClick={handleResetPassword}
-                      disabled={loading}
-                      className="mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          {/* Danger zone */}
+          <Card className="border-destructive/50 bg-destructive/5">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-3">
+                <Trash2 size={20} className="text-destructive" />
+                <div>
+                  <CardTitle className="text-base text-destructive">Удалить аккаунт</CardTitle>
+                  <CardDescription className="text-destructive/80">
+                    Для удаления аккаунта и всех данных напишите на{' '}
+                    <a 
+                      href={`mailto:support@example.com?subject=Удаление аккаунта&body=Прошу удалить мой аккаунт: ${user?.email || ''}`}
+                      className="underline hover:no-underline"
                     >
-                      {loading ? 'Отправка...' : 'Отправить ссылку'}
-                    </button>
-                  </div>
+                      support@example.com
+                    </a>
+                  </CardDescription>
                 </div>
               </div>
-
-              {/* Danger zone */}
-              <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-                <div className="flex items-start gap-3">
-                  <Trash2 size={20} className="text-red-500 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="font-medium text-red-700">Удалить аккаунт</h3>
-                    <p className="text-sm text-red-600 mt-1">
-                      Для удаления аккаунта и всех данных напишите на{' '}
-                      <a 
-                        href={`mailto:support@example.com?subject=Удаление аккаунта&body=Прошу удалить мой аккаунт: ${user?.email || ''}`}
-                        className="underline hover:no-underline"
-                      >
-                        support@example.com
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            </CardHeader>
+          </Card>
+        </TabsContent>
       </div>
-    </div>
+    </Tabs>
+  );
+
+  // Mobile: Sheet from bottom
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl pb-safe">
+          <SheetHeader className="pb-4">
+            <SheetTitle>Настройки</SheetTitle>
+          </SheetHeader>
+          <div className="overflow-y-auto flex-1 -mx-4 px-4">
+            {content}
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop: Dialog
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Настройки</DialogTitle>
+        </DialogHeader>
+        {content}
+      </DialogContent>
+    </Dialog>
   );
 };
 

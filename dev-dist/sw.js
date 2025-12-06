@@ -81,12 +81,13 @@ define(['./workbox-21a80088'], (function (workbox) { 'use strict';
     "url": "registerSW.js",
     "revision": "d3b122656a89942aa3164f5ccd56d9ca"
   }, {
-    "url": "index.html",
-    "revision": "0.8mp4ctsjpv8"
+    "url": "/Investment_calculator/offline.html",
+    "revision": "0.4kdq491k9us"
   }], {});
   workbox.cleanupOutdatedCaches();
-  workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
-    allowlist: [/^\/$/]
+  workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("/Investment_calculator/offline.html"), {
+    allowlist: [/^\/$/],
+    denylist: [/^\/api/, /\.[^/]+$/]
   }));
   workbox.registerRoute(/^https:\/\/api\.openstreetmap\.org\/.*/i, new workbox.CacheFirst({
     "cacheName": "osm-api-cache",

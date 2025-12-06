@@ -55,14 +55,16 @@ describe('MetricsGrid', () => {
   it('должен отображать IRR', () => {
     render(<MetricsGrid calculations={mockCalculations} />);
     
-    expect(screen.getByText('IRR')).toBeInTheDocument();
+    // Label изменён на "IRR годовой"
+    expect(screen.getByText(/IRR/)).toBeInTheDocument();
     expect(screen.getByText('42.2%')).toBeInTheDocument();
   });
   
   it('должен отображать срок в месяцах', () => {
     render(<MetricsGrid calculations={mockCalculations} />);
     
-    expect(screen.getByText('Срок')).toBeInTheDocument();
+    // Label изменён на "Срок сделки"
+    expect(screen.getByText(/Срок/)).toBeInTheDocument();
     expect(screen.getByText('6 мес')).toBeInTheDocument();
   });
   

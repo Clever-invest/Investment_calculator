@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { formatCurrency } from '../../utils/format';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { CalculatorParams, Calculations } from '../../types/calculator';
 
 interface OffPlanInfoProps {
@@ -12,6 +13,8 @@ interface OffPlanInfoProps {
 }
 
 export const OffPlanInfo: React.FC<OffPlanInfoProps> = ({ params, calculations }) => {
+  const isMobile = useIsMobile();
+
   if (params.dealType !== 'offplan' || calculations.remainingDebt === undefined) {
     return null;
   }
@@ -25,12 +28,12 @@ export const OffPlanInfo: React.FC<OffPlanInfoProps> = ({ params, calculations }
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h3 className="text-sm sm:text-base font-bold text-purple-800 mb-2 flex items-center gap-2">
-            💳 Остаток долга застройщику на момент продажи
+            {isMobile ? '💳 Долг на дату продажи' : '💳 Остаток долга застройщику на момент продажи'}
           </h3>
           <p className="text-xs text-purple-600 mb-3">
-            📅 Прогнозируемая дата продажи: <strong>{saleDate.toLocaleDateString('ru-RU')}</strong>
+            {isMobile ? '📅' : '📅 Прогноз:'} <strong>{saleDate.toLocaleDateString('ru-RU')}</strong>
           </p>
-          <p className="text-xs text-purple-600">
+          <p className="text-xs text-purple-600 hidden sm:block">
             Будет погашен из выручки при продаже
           </p>
         </div>
@@ -49,7 +52,7 @@ export const OffPlanInfo: React.FC<OffPlanInfoProps> = ({ params, calculations }
       {params.paymentSchedule && params.paymentSchedule.length > 0 && (
         <div className="mt-4 pt-4 border-t border-purple-200">
           <p className="text-xs text-purple-700 font-medium mb-2">
-            🗓️ Детализация платежей ({params.paymentSchedule.length}):
+            {isMobile ? `🗓️ Платежи (${params.paymentSchedule.length})` : `🗓️ Детализация платежей (${params.paymentSchedule.length})`}:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {params.paymentSchedule.map((payment, idx) => {
@@ -73,7 +76,7 @@ export const OffPlanInfo: React.FC<OffPlanInfoProps> = ({ params, calculations }
               );
             })}
           </div>
-          <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
+          <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200 hidden sm:block">
             <p className="text-xs text-yellow-800">
               <strong>ℹ️ Примечание:</strong> ❌ = Должен быть погашен при продаже | ✅ = Останется за покупателем
             </p>

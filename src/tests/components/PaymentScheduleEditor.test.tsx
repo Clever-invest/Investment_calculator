@@ -28,7 +28,8 @@ describe('PaymentScheduleEditor', () => {
 
   it('должен отображать кнопку добавления', () => {
     render(<PaymentScheduleEditor schedule={emptySchedule} onChange={mockOnChange} />);
-    expect(screen.getByText('+ Добавить')).toBeInTheDocument();
+    // Кнопка содержит иконку Plus и текст "Добавить"
+    expect(screen.getByRole('button', { name: /Добавить/ })).toBeInTheDocument();
   });
 
   it('должен показывать placeholder при пустом списке', () => {
@@ -39,7 +40,7 @@ describe('PaymentScheduleEditor', () => {
   it('должен добавлять новый платёж при клике на кнопку', () => {
     render(<PaymentScheduleEditor schedule={emptySchedule} onChange={mockOnChange} />);
     
-    const addButton = screen.getByText('+ Добавить');
+    const addButton = screen.getByRole('button', { name: /Добавить/ });
     fireEvent.click(addButton);
     
     expect(mockOnChange).toHaveBeenCalledWith([{ amount: 10000, date: '' }]);
@@ -55,8 +56,12 @@ describe('PaymentScheduleEditor', () => {
   it('должен удалять платёж при клике на кнопку удаления', () => {
     render(<PaymentScheduleEditor schedule={sampleSchedule} onChange={mockOnChange} />);
     
-    const deleteButtons = screen.getAllByText('✕');
-    fireEvent.click(deleteButtons[0]);
+    // Теперь используется иконка X из lucide вместо символа ✕
+    const deleteButtons = document.querySelectorAll('svg.lucide-x');
+    expect(deleteButtons.length).toBeGreaterThan(0);
+    // Кликаем на родительскую кнопку первой иконки
+    const firstDeleteButton = deleteButtons[0].closest('button');
+    if (firstDeleteButton) fireEvent.click(firstDeleteButton);
     
     // Должен удалить первый платёж, оставив второй
     expect(mockOnChange).toHaveBeenCalledWith([{ amount: 200000, date: '2025-12-01' }]);
@@ -129,7 +134,7 @@ describe('PaymentScheduleEditor', () => {
     ];
     render(<PaymentScheduleEditor schedule={schedule} onChange={mockOnChange} />);
     
-    const addButton = screen.getByText('+ Добавить');
+    const addButton = screen.getByText(/Добавить/);
     fireEvent.click(addButton);
     
     expect(mockOnChange).toHaveBeenCalledWith([
