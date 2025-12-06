@@ -28,14 +28,14 @@ interface BottomNavProps {
   propertiesCount?: number
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({ 
-  activeTab, 
+export const BottomNav: React.FC<BottomNavProps> = ({
+  activeTab,
   onTabChange,
-  propertiesCount = 0 
+  propertiesCount = 0
 }) => {
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur-sm border-t md:hidden z-50">
-      <div className="flex justify-around py-2 pb-safe">
+    <nav className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur-sm border-t md:hidden z-50 pb-safe">
+      <div className="flex justify-around py-2">
         {NAV_ITEMS.map((item) => (
           <button
             key={item.id}

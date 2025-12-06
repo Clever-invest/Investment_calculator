@@ -136,16 +136,55 @@ export const exportDealSheetHTML = (
         .positive { color: #10b981; font-weight: 600; }
         .negative { color: #ef4444; font-weight: 600; }
         .footer { margin-top: 24px; padding-top: 16px; border-top: 2px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px; }
+        /* Action buttons - hidden when printing */
+        .action-bar { 
+          position: sticky; 
+          top: 0; 
+          background: white; 
+          padding: 16px; 
+          margin: -24px -24px 24px -24px; 
+          border-bottom: 1px solid #e5e7eb; 
+          display: flex; 
+          gap: 12px; 
+          justify-content: center;
+          z-index: 100;
+        }
+        .btn { 
+          padding: 12px 24px; 
+          border-radius: 8px; 
+          font-weight: 600; 
+          font-size: 14px; 
+          cursor: pointer; 
+          border: none;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+        .btn-secondary:hover { background: #e5e7eb; }
         @media print { 
           body { padding: 16px; background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; } 
           .container { box-shadow: none; } 
           .metric-card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+          .action-bar { display: none !important; }
           @page { margin: 1cm; } 
         }
       </style>
     </head>
     <body>
       <div class="container">
+        <!-- Action bar for PWA users -->
+        <div class="action-bar">
+          <button class="btn btn-secondary" onclick="window.close(); if(!window.closed) { window.location.href = document.referrer || '/'; }">
+            ← Назад к калькулятору
+          </button>
+          <button class="btn btn-primary" onclick="window.print()">
+            📄 Сохранить PDF
+          </button>
+        </div>
+        
         <div class="header">
           <h1>📊 Лист сделки флиппинга</h1>
           <div class="subtitle">${formatted.propertyName}</div>
@@ -232,8 +271,8 @@ export const exportDealSheetHTML = (
 
   printWindow.document.close();
   setTimeout(() => {
-    try { 
-      printWindow.print(); 
+    try {
+      printWindow.print();
     } catch {
       toast.info('Документ открыт в новом окне', {
         description: 'Используйте Ctrl+P или Cmd+P для печати',
