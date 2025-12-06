@@ -25,33 +25,33 @@ import { AuthModal, UserMenu } from './components/auth';
 // Компоненты форм
 import { PropertyInfoForm, DealParamsForm } from './components/forms';
 // Компоненты результатов
-import { 
-  MetricsGrid, 
-  WaterfallChart, 
-  DetailedBreakdown, 
-  SensitivityChart, 
+import {
+  MetricsGrid,
+  WaterfallChart,
+  DetailedBreakdown,
+  SensitivityChart,
   EarlySaleTable,
-  OffPlanInfo 
+  OffPlanInfo
 } from './components/results';
 // Компоненты проектов
 import { SavedPropertiesList } from './components/projects';
 import { exportDealSheetHTML } from './components/projects/DealSheetExport';
 // Хуки расчётов
-import { 
-  useCalculations, 
-  useWaterfallData, 
-  useSensitivityData, 
-  useEarlyDiscountData 
+import {
+  useCalculations,
+  useWaterfallData,
+  useSensitivityData,
+  useEarlyDiscountData
 } from './hooks/useCalculations';
 // Сервисы
 import { loadAllProperties } from './services/storage';
 // Stores
-import { 
-  useCalculatorStore, 
-  usePropertiesStore, 
+import {
+  useCalculatorStore,
+  usePropertiesStore,
   useUIStore,
   useAuthStore,
-  TABS 
+  TABS
 } from './stores';
 // Типы
 import type { CalculatorParams, SavedProperty } from './types/calculator';
@@ -61,15 +61,15 @@ import { haptic } from './utils/haptic';
 const FlipCalculator: React.FC = () => {
   // Mobile detection
   const isMobile = useIsMobile();
-  
+
   // Auth Modal state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
-  
+
   // Scroll state для compact MetricsGrid
   const [isScrolled, setIsScrolled] = useState(false);
-  
+
   // Temporary property ID for new properties (used for image uploads)
   const [tempPropertyId, setTempPropertyId] = useState<string>(() => crypto.randomUUID());
 
@@ -114,11 +114,11 @@ const FlipCalculator: React.FC = () => {
   // Отслеживание скролла для compact MetricsGrid
   useEffect(() => {
     if (!isMobile) return;
-    
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 100);
     };
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile]);
@@ -184,13 +184,13 @@ const FlipCalculator: React.FC = () => {
     }
     try {
       await addPropertyAsync(params, calculations, coordinates, tempPropertyId);
-      
+
       // Генерируем новый ID для следующего объекта
       setTempPropertyId(crypto.randomUUID());
-      
+
       // Сбрасываем форму к дефолтным значениям ПОСЛЕ успешного сохранения
       resetParams();
-      
+
       haptic.success();
       toast.success('Объект сохранён!', {
         description: 'Форма очищена для нового объекта',
@@ -265,9 +265,9 @@ const FlipCalculator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-3 sm:p-4 pb-24 md:pb-4">
+    <div className="min-h-screen bg-background p-3 sm:p-4 pb-24 md:pb-4">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-xl overflow-hidden">
           {/* Заголовок */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 sm:p-6 text-white">
             <div className="flex items-center justify-between gap-2 sm:gap-3 mb-2">
@@ -277,7 +277,7 @@ const FlipCalculator: React.FC = () => {
                   {isMobile ? 'Флип-калькулятор' : 'Калькулятор флиппинга недвижимости'}
                 </h1>
               </div>
-              
+
               {/* Кнопки справа на мобильных */}
               <div className="flex items-center gap-1.5 sm:hidden">
                 <button
@@ -289,7 +289,7 @@ const FlipCalculator: React.FC = () => {
                 </button>
                 <UserMenu onOpenAuth={() => setIsAuthModalOpen(true)} />
               </div>
-              
+
               {/* Кнопки справа на десктопе */}
               <div className="hidden sm:flex items-center gap-2">
                 <button
@@ -348,9 +348,9 @@ const FlipCalculator: React.FC = () => {
               )}
 
               {/* Метрики - sticky на мобильных с compact режимом при скролле */}
-              <div className="sticky top-0 z-20 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2 bg-white/95 backdrop-blur-sm border-b border-transparent data-[scrolled=true]:border-gray-200 md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:border-0" data-scrolled={isScrolled && isMobile}>
-                <MetricsGrid 
-                  calculations={calculations} 
+              <div className="sticky top-0 z-20 -mx-3 sm:-mx-6 px-3 sm:px-6 py-2 bg-background/95 backdrop-blur-sm border-b border-transparent data-[scrolled=true]:border-border md:static md:mx-0 md:px-0 md:py-0 md:bg-transparent md:border-0" data-scrolled={isScrolled && isMobile}>
+                <MetricsGrid
+                  calculations={calculations}
                   compact={isScrolled && isMobile}
                 />
               </div>
@@ -361,7 +361,7 @@ const FlipCalculator: React.FC = () => {
               {/* Вкладки - shadcn Tabs */}
               <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="w-full">
                 {/* Desktop Tabs - скрыты на мобильных */}
-                <div className="hidden md:block relative bg-white rounded-xl border border-gray-200">
+                <div className="hidden md:block relative bg-card rounded-xl border border-border">
                   <TabsList className="w-full justify-start bg-transparent border-b rounded-none h-auto p-0">
                     {TABS.map(tab => (
                       <TabsTrigger
@@ -378,7 +378,7 @@ const FlipCalculator: React.FC = () => {
                 </div>
 
                 {/* Mobile показывает только контент, навигация внизу */}
-                <div className="bg-white rounded-xl border border-gray-200 md:border-0 md:rounded-none">
+                <div className="bg-card rounded-xl border border-border md:border-0 md:rounded-none">
                   <div className="p-3 sm:p-6">
                     <TabsContent value="overview" className="mt-0">
                       <WaterfallChart data={waterfallData} calculations={calculations} />
@@ -419,18 +419,18 @@ const FlipCalculator: React.FC = () => {
       {showMigrationPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
+          <div className="relative bg-card rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-xl font-bold text-foreground mb-3">
               Синхронизация данных
             </h3>
-            <p className="text-gray-600 mb-4">
-              У вас есть {properties.length} сохранённых объектов локально. 
+            <p className="text-muted-foreground mb-4">
+              У вас есть {properties.length} сохранённых объектов локально.
               Хотите загрузить их в облако для синхронизации между устройствами?
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleSkipMigration}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted transition-colors"
               >
                 Пропустить
               </button>

@@ -59,7 +59,7 @@ export const SavedPropertiesList: React.FC<SavedPropertiesListProps> = ({
     return (
       <div>
         <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Сохраненные объекты</h3>
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <Save className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 opacity-30" />
           <p className="text-sm">Нет сохраненных объектов</p>
           <p className="text-xs sm:text-sm mt-1">Заполните параметры и нажмите «Сохранить объект»</p>
@@ -73,13 +73,13 @@ export const SavedPropertiesList: React.FC<SavedPropertiesListProps> = ({
       <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Сохраненные объекты</h3>
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {properties.map((property) => (
-          <div key={property.id} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+          <div key={property.id} className="border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow bg-card">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-4 py-3 border-b border-gray-100">
-              <h4 className="font-bold text-gray-800 text-sm sm:text-base truncate">
+            <div className="bg-muted/50 px-4 py-3 border-b border-border">
+              <h4 className="font-bold text-foreground text-sm sm:text-base truncate">
                 {property.propertyName || 'Без названия'}
               </h4>
-              <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                 {property.location && (
                   <span className="flex items-center gap-1 truncate">
                     <MapPin className="w-3 h-3 shrink-0" />
@@ -97,16 +97,16 @@ export const SavedPropertiesList: React.FC<SavedPropertiesListProps> = ({
             <div className="p-4 space-y-2">
               {/* Key metrics in vertical list for mobile */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                <div className="flex justify-between sm:flex-col sm:items-start py-1 sm:py-0 border-b sm:border-b-0 border-gray-100">
-                  <span className="text-gray-500">Покупка:</span>
-                  <span className="font-semibold text-gray-800">{formatCurrency(property.purchasePrice)}</span>
+                <div className="flex justify-between sm:flex-col sm:items-start py-1 sm:py-0 border-b sm:border-b-0 border-border">
+                  <span className="text-muted-foreground">Покупка:</span>
+                  <span className="font-semibold text-foreground">{formatCurrency(property.purchasePrice)}</span>
                 </div>
-                <div className="flex justify-between sm:flex-col sm:items-start py-1 sm:py-0 border-b sm:border-b-0 border-gray-100">
-                  <span className="text-gray-500">Продажа:</span>
-                  <span className="font-semibold text-gray-800">{formatCurrency(property.sellingPrice)}</span>
+                <div className="flex justify-between sm:flex-col sm:items-start py-1 sm:py-0 border-b sm:border-b-0 border-border">
+                  <span className="text-muted-foreground">Продажа:</span>
+                  <span className="font-semibold text-foreground">{formatCurrency(property.sellingPrice)}</span>
                 </div>
                 <div className="flex justify-between sm:flex-col sm:items-start py-1 sm:py-0">
-                  <span className="text-gray-500">Прибыль:</span>
+                  <span className="text-muted-foreground">Прибыль:</span>
                   <span className={`font-semibold ${(property?.calculations?.profit?.net ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatCurrency(property?.calculations?.profit?.net ?? 0)}
                   </span>
@@ -114,17 +114,17 @@ export const SavedPropertiesList: React.FC<SavedPropertiesListProps> = ({
               </div>
 
               {/* ROI and Term row */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between pt-2 border-t border-border">
                 <div className="flex items-center gap-4 text-sm">
                   <span>
-                    <span className="text-gray-500">ROI: </span>
+                    <span className="text-muted-foreground">ROI: </span>
                     <span className="font-semibold text-blue-600">
                       {(property?.calculations?.profit?.roi ?? 0).toFixed(1)}%
                     </span>
                   </span>
                   <span>
-                    <span className="text-gray-500">Срок: </span>
-                    <span className="font-semibold text-gray-700">
+                    <span className="text-muted-foreground">Срок: </span>
+                    <span className="font-semibold text-foreground">
                       {property?.calculations?.totalMonths ?? 0} мес
                     </span>
                   </span>
@@ -133,7 +133,7 @@ export const SavedPropertiesList: React.FC<SavedPropertiesListProps> = ({
             </div>
 
             {/* Actions footer */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-t border-gray-100">
+            <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-t border-border">
               <button
                 onClick={() => onLoad(property)}
                 className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"

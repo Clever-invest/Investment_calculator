@@ -31,23 +31,23 @@ interface CalcRowProps {
   isMobile: boolean;
 }
 
-const CalcRow: React.FC<CalcRowProps> = ({ 
-  label, shortLabel, value, formula, isAdd, isSub, highlight, isMobile 
+const CalcRow: React.FC<CalcRowProps> = ({
+  label, shortLabel, value, formula, isAdd, isSub, highlight, isMobile
 }) => {
   const displayLabel = isMobile && shortLabel ? shortLabel : label;
-  const valueColor = isAdd ? 'text-orange-600' : isSub ? 'text-red-600' : 'text-gray-900';
+  const valueColor = isAdd ? 'text-orange-600' : isSub ? 'text-red-600' : 'text-foreground';
   const prefix = isAdd ? '+ ' : isSub ? '- ' : '';
-  const bgClass = highlight === 'purple' 
-    ? 'bg-purple-50 border border-purple-200' 
-    : 'bg-white';
-  
+  const bgClass = highlight === 'purple'
+    ? 'bg-purple-50 border border-purple-200'
+    : 'bg-card';
+
   return (
     <div className={`flex justify-between items-center ${bgClass} p-2 sm:p-3 rounded-lg`}>
-      <span className="text-gray-700 text-xs sm:text-sm">{displayLabel}</span>
+      <span className="text-muted-foreground text-xs sm:text-sm">{displayLabel}</span>
       <span className={`font-bold text-xs sm:text-sm ${valueColor}`}>
         {prefix}{value}
         {!isMobile && formula && (
-          <span className="text-[10px] text-gray-500 ml-2">({formula})</span>
+          <span className="text-[10px] text-muted-foreground ml-2">({formula})</span>
         )}
       </span>
     </div>
@@ -80,29 +80,29 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
           <div className="space-y-1.5 sm:space-y-3 font-mono">
             {params.dealType === 'offplan' ? (
               <>
-                <CalcRow 
-                  label="🏗️ Стоимость от застройщика" 
+                <CalcRow
+                  label="🏗️ Стоимость от застройщика"
                   shortLabel="🏗️ От застройщика"
-                  value={formatCurrency(params.purchasePrice)} 
+                  value={formatCurrency(params.purchasePrice)}
                   highlight="purple"
                   isMobile={isMobile}
                 />
-                <CalcRow 
+                <CalcRow
                   label={`Оплачено (${paidPercent}%)`}
                   shortLabel={`Оплачено ${paidPercent}%`}
-                  value={formatCurrency(params.paidAmount)} 
+                  value={formatCurrency(params.paidAmount)}
                   isMobile={isMobile}
                 />
               </>
             ) : (
-              <CalcRow 
-                label="Цена покупки" 
-                value={formatCurrency(params.purchasePrice)} 
+              <CalcRow
+                label="Цена покупки"
+                value={formatCurrency(params.purchasePrice)}
                 isMobile={isMobile}
               />
             )}
-            
-            <CalcRow 
+
+            <CalcRow
               label={`DLD/регистрация (${params.dldFees}%)`}
               shortLabel={`DLD ${params.dldFees}%`}
               value={formatCurrency(calculations.costs.dld)}
@@ -110,8 +110,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label={`Комиссия брокера покупка (${params.buyerCommission}%)`}
               shortLabel={`Комиссия ${params.buyerCommission}%`}
               value={formatCurrency(calculations.costs.buyerCommission)}
@@ -119,8 +119,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label="VAT на комиссию (5%)"
               shortLabel="VAT 5%"
               value={formatCurrency(calculations.costs.buyerCommissionVAT)}
@@ -128,16 +128,16 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label="Бюджет ремонта"
               shortLabel="Ремонт"
               value={formatCurrency(params.renovationBudget)}
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label={`Резерв (${params.contingency}%)`}
               shortLabel={`Резерв ${params.contingency}%`}
               value={formatCurrency(calculations.costs.renovation - params.renovationBudget)}
@@ -145,8 +145,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label="Service Charge"
               shortLabel="SC"
               value={formatCurrency(calculations.costs.serviceCharge)}
@@ -154,8 +154,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label="DEWA AC"
               shortLabel="DEWA"
               value={formatCurrency(calculations.costs.dewaAc)}
@@ -163,8 +163,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isAdd
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label="Trustee Office Fee"
               shortLabel="Trustee"
               value={formatCurrency(params.trusteeOfficeFee)}
@@ -189,14 +189,14 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
           </h4>
 
           <div className="space-y-1.5 sm:space-y-3 font-mono">
-            <CalcRow 
-              label="Цена продажи" 
+            <CalcRow
+              label="Цена продажи"
               shortLabel="Продажа"
-              value={formatCurrency(params.sellingPrice)} 
+              value={formatCurrency(params.sellingPrice)}
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label={`Комиссия продажа (${params.sellerCommission}%)`}
               shortLabel={`Комиссия ${params.sellerCommission}%`}
               value={formatCurrency(calculations.revenue.sellerCommission)}
@@ -204,8 +204,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
               isSub
               isMobile={isMobile}
             />
-            
-            <CalcRow 
+
+            <CalcRow
               label="VAT на комиссию (5%)"
               shortLabel="VAT 5%"
               value={formatCurrency(calculations.revenue.sellerCommissionVAT)}
@@ -215,7 +215,7 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
             />
 
             {params.dealType === 'offplan' && calculations.remainingDebt && calculations.remainingDebt > 0 && (
-              <CalcRow 
+              <CalcRow
                 label="💳 Остаток долга застройщику"
                 shortLabel="💳 Долг"
                 value={formatCurrency(calculations.remainingDebt)}
@@ -242,20 +242,20 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
           </h4>
 
           <div className="space-y-1.5 sm:space-y-3 font-mono">
-            <CalcRow 
-              label="Чистая выручка" 
+            <CalcRow
+              label="Чистая выручка"
               shortLabel="Выручка"
-              value={formatCurrency(calculations.revenue.net)} 
+              value={formatCurrency(calculations.revenue.net)}
               isMobile={isMobile}
             />
-            <CalcRow 
-              label="Общие затраты" 
+            <CalcRow
+              label="Общие затраты"
               shortLabel="Затраты"
-              value={formatCurrency(calculations.costs.total)} 
+              value={formatCurrency(calculations.costs.total)}
               isSub
               isMobile={isMobile}
             />
-            
+
             {/* Итог */}
             <div className={`border-t-2 sm:border-t-4 ${calculations.profit.net >= 0 ? 'border-green-400' : 'border-red-400'} pt-2 sm:pt-3 mt-2 sm:mt-3`}>
               <div className={`flex justify-between items-center ${calculations.profit.net >= 0 ? 'bg-green-100' : 'bg-red-100'} p-2 sm:p-4 rounded-lg`}>
@@ -275,34 +275,34 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
           <h4 className="text-sm sm:text-lg font-bold text-purple-800 mb-2 sm:mb-4">{T('metrics')}</h4>
           <div className="space-y-2 sm:space-y-4">
             {/* ROI */}
-            <div className="bg-white p-2 sm:p-4 rounded-lg border border-purple-200">
+            <div className="bg-card p-2 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-900">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-purple-900 text-sm">{isMobile ? 'ROI' : 'ROI (Return on Investment)'}</span>
                 <span className="font-bold text-lg sm:text-xl text-purple-900">{calculations.profit.roi.toFixed(2)}%</span>
               </div>
               {!isMobile && (
-                <div className="font-mono text-xs mt-2 space-y-1 text-gray-600">
+                <div className="font-mono text-xs mt-2 space-y-1 text-muted-foreground">
                   <div>= (Прибыль ÷ Затраты) × 100%</div>
                   <div className="text-purple-700">= ({formatCurrency(calculations.profit.net)} ÷ {formatCurrency(calculations.costs.total)}) × 100%</div>
                 </div>
               )}
             </div>
-            
+
             {/* IRR */}
-            <div className="bg-white p-2 sm:p-4 rounded-lg border border-purple-200">
+            <div className="bg-card p-2 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-900">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-purple-900 text-sm">{isMobile ? 'IRR (год)' : 'IRR — годовая доходность'}</span>
                 <span className="font-bold text-lg sm:text-xl text-purple-900">{calculations.profit.irr.toFixed(2)}%</span>
               </div>
               {!isMobile && (
-                <div className="font-mono text-xs mt-2 space-y-1 text-gray-600">
+                <div className="font-mono text-xs mt-2 space-y-1 text-muted-foreground">
                   <div>= ((Выручка ÷ Затраты)^(12/мес) - 1) × 100%</div>
                   <div className="text-purple-700">= (({formatCurrency(calculations.revenue.net)} ÷ {formatCurrency(calculations.costs.total)})^(12/{calculations.totalMonths}) - 1) × 100%</div>
                 </div>
               )}
             </div>
           </div>
-          
+
           {/* Пояснения - только десктоп */}
           {!isMobile && (
             <div className="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
@@ -318,13 +318,13 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
         {/* Точка безубыточности */}
         <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-yellow-200">
           <h4 className="text-sm sm:text-lg font-bold text-yellow-800 mb-2 sm:mb-4">{T('breakeven')}</h4>
-          <div className="bg-white p-2 sm:p-4 rounded-lg border border-yellow-200">
+          <div className="bg-card p-2 sm:p-4 rounded-lg border border-yellow-200 dark:border-yellow-900">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700 text-sm">{isMobile ? 'Мин. цена' : 'Минимальная цена продажи'}</span>
+              <span className="text-muted-foreground text-sm">{isMobile ? 'Мин. цена' : 'Минимальная цена продажи'}</span>
               <span className="font-bold text-lg sm:text-xl text-yellow-900">{formatCurrency(calculations.breakEven)}</span>
             </div>
             {!isMobile && (
-              <div className="font-mono text-xs mt-2 space-y-1 text-gray-600">
+              <div className="font-mono text-xs mt-2 space-y-1 text-muted-foreground">
                 <div>= Затраты ÷ (1 - Комиссия × 1.05)</div>
                 <div className="text-yellow-700">= {formatCurrency(calculations.costs.total)} ÷ (1 - {params.sellerCommission}% × 1.05)</div>
               </div>
