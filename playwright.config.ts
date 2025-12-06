@@ -19,7 +19,7 @@ export default defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: 'http://localhost:5174/Investment_calculator',
+    baseURL: 'http://localhost:5173/Investment_calculator',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -31,8 +31,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5174/Investment_calculator/',
-    reuseExistingServer: true,
+    url: 'http://localhost:5173/Investment_calculator/',
+    reuseExistingServer: !process.env.CI,
     timeout: 60 * 1000,
   },
 });
