@@ -27,8 +27,14 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searching, setSearching] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
+  const skipSearchRef = useRef(false);
 
   useEffect(() => {
+    if (skipSearchRef.current) {
+      skipSearchRef.current = false;
+      return;
+    }
+
     const delaySearch = setTimeout(() => {
       if (value.length > 3) {
         handleSearch(value);
@@ -67,6 +73,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   };
 
   const selectLocation = (suggestion: LocationSuggestion) => {
+    skipSearchRef.current = true;
     const displayName = formatDisplayName(suggestion.display_name);
     onChange(displayName);
     onCoordinatesChange(parseCoordinates(suggestion));
