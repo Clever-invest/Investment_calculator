@@ -200,3 +200,43 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 - Workbox для Service Worker
 - Кэширование: OSM tiles, Supabase API
 - Offline-first для сохранённых объектов
+
+---
+
+## 🔄 Notion Sync
+
+### Архитектура
+```
+INSERT/UPDATE/DELETE → trigger_notion_sync → pg_net HTTP → sync-to-notion Edge Function → Notion API
+```
+
+### Edge Function v8
+- Создаёт страницу при INSERT со статусом "Sourcing"
+- Обновляет страницу при UPDATE (не трогает Status)
+- Архивирует страницу при DELETE
+- Прикрепляет все фото (не только первое)
+- ROI/IRR делятся на 100 для формата Percent
+
+### Маппинг полей
+| Supabase | Notion | Примечание |
+|----------|--------|------------|
+| `location` + `coordinates` | Location (Place) | С точкой на карте |
+| `params.bedrooms` | Bedroom | Единственное число! |
+| `params.bathrooms` | Bathroom | Единственное число! |
+| `calculations.profit.roi` | ROI | Формат Percent, делим на 100 |
+| `calculations.profit.irr` | IRR | Формат Percent, делим на 100 |
+| `images[]` | Images (Files) | Все фото, первое = cover |
+
+### Управление
+```sql
+-- Отключить
+ALTER TABLE properties DISABLE TRIGGER trigger_notion_sync;
+-- Включить
+ALTER TABLE properties ENABLE TRIGGER trigger_notion_sync;
+```
+
+### Секреты
+```
+NOTION_API_KEY=secret_xxx
+NOTION_DATABASE_ID=xxx
+```
