@@ -7,6 +7,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { PaymentScheduleEditor } from '../../components/forms/PaymentScheduleEditor';
 import type { PaymentScheduleItem } from '../../types/calculator';
 
+vi.mock('@/components/ui/date-picker', () => ({
+  DatePicker: ({ value, onChange }: { value?: string; onChange: (value: string) => void }) => (
+    <input
+      value={value ?? ''}
+      onChange={(e) => onChange((e.target as HTMLInputElement).value)}
+    />
+  ),
+}));
+
 const mockOnChange = vi.fn();
 
 const emptySchedule: PaymentScheduleItem[] = [];
