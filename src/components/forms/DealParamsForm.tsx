@@ -112,14 +112,14 @@ export const DealParamsForm: React.FC<DealParamsFormProps> = ({
 
   return (
     <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-0 shadow-sm">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 px-3 sm:px-6">
         <CardTitle className="text-lg font-bold">Параметры сделки</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 sm:px-6">
         <Accordion type="multiple" defaultValue={["purchase", "sale"]} className="space-y-2">
           
           {/* 💰 Покупка */}
-          <AccordionItem value="purchase" className="border rounded-lg bg-background/50 px-3">
+          <AccordionItem value="purchase" className="border rounded-lg bg-background/50 px-0 sm:px-3">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-blue-600" />
@@ -185,7 +185,7 @@ export const DealParamsForm: React.FC<DealParamsFormProps> = ({
           </AccordionItem>
 
           {/* 💵 Продажа */}
-          <AccordionItem value="sale" className="border rounded-lg bg-background/50 px-3">
+          <AccordionItem value="sale" className="border rounded-lg bg-background/50 px-0 sm:px-3">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-green-600" />
@@ -224,7 +224,7 @@ export const DealParamsForm: React.FC<DealParamsFormProps> = ({
           </AccordionItem>
 
           {/* 🔨 Ремонт */}
-          <AccordionItem value="renovation" className="border rounded-lg bg-background/50 px-3">
+          <AccordionItem value="renovation" className="border rounded-lg bg-background/50 px-0 sm:px-3">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2">
                 <Hammer className="h-4 w-4 text-orange-600" />
@@ -265,7 +265,7 @@ export const DealParamsForm: React.FC<DealParamsFormProps> = ({
           </AccordionItem>
 
           {/* ⏱️ Сроки и расходы */}
-          <AccordionItem value="timing" className="border rounded-lg bg-background/50 px-3">
+          <AccordionItem value="timing" className="border rounded-lg bg-background/50 px-0 sm:px-3">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-purple-600" />

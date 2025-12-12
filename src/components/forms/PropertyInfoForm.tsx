@@ -38,10 +38,10 @@ export const PropertyInfoForm: React.FC<PropertyInfoFormProps> = ({
 }) => {
   return (
     <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-0 shadow-sm">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 px-3 sm:px-6">
         <CardTitle className="text-lg font-bold">Информация об объекте</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-3 sm:px-6">
         {/* Название объекта */}
         <div className="space-y-2">
           <Label htmlFor="propertyName">Название объекта</Label>
