@@ -125,7 +125,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Success message */}
         {message && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <div className="p-3 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300 text-sm">
             {message}
           </div>
         )}

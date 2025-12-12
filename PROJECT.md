@@ -1,7 +1,7 @@
 # Flip Calculator — Investment Property Calculator
 
 > **Версия:** 2.2.0  
-> **Последнее обновление:** 11 декабря 2025  
+> **Последнее обновление:** 12 декабря 2025  
 > **Статус:** ✅ Production Ready
 
 ---

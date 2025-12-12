@@ -35,10 +35,10 @@ const CalcRow: React.FC<CalcRowProps> = ({
   label, shortLabel, value, formula, isAdd, isSub, highlight, isMobile
 }) => {
   const displayLabel = isMobile && shortLabel ? shortLabel : label;
-  const valueColor = isAdd ? 'text-orange-600' : isSub ? 'text-red-600' : 'text-foreground';
+  const valueColor = isAdd ? 'text-orange-600 dark:text-orange-400' : isSub ? 'text-red-600 dark:text-red-400' : 'text-foreground';
   const prefix = isAdd ? '+ ' : isSub ? '- ' : '';
   const bgClass = highlight === 'purple'
-    ? 'bg-purple-50 border border-purple-200'
+    ? 'bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800'
     : 'bg-card';
 
   return (
@@ -72,8 +72,8 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
 
       <div className="space-y-3 sm:space-y-6 text-xs sm:text-sm">
         {/* Расходы */}
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-orange-200">
-          <h4 className="text-sm sm:text-lg font-bold text-orange-800 mb-2 sm:mb-4">
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-orange-200 dark:border-orange-800">
+          <h4 className="text-sm sm:text-lg font-bold text-orange-800 dark:text-orange-300 mb-2 sm:mb-4">
             {T('costs')}
           </h4>
 
@@ -174,17 +174,17 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
 
             {/* Итог */}
             <div className="border-t-2 sm:border-t-4 border-orange-400 pt-2 sm:pt-3 mt-2 sm:mt-3">
-              <div className="flex justify-between items-center bg-orange-100 p-2 sm:p-4 rounded-lg">
-                <span className="font-bold text-sm sm:text-lg text-orange-900">{isMobile ? 'ИТОГО' : '= ОБЩИЕ ЗАТРАТЫ'}</span>
-                <span className="font-bold text-lg sm:text-2xl text-orange-900">{formatCurrency(calculations.costs.total)}</span>
+              <div className="flex justify-between items-center bg-orange-100 dark:bg-orange-900/30 p-2 sm:p-4 rounded-lg">
+                <span className="font-bold text-sm sm:text-lg text-orange-900 dark:text-orange-200">{isMobile ? 'ИТОГО' : '= ОБЩИЕ ЗАТРАТЫ'}</span>
+                <span className="font-bold text-lg sm:text-2xl text-orange-900 dark:text-orange-200">{formatCurrency(calculations.costs.total)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Выручка */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-blue-200">
-          <h4 className="text-sm sm:text-lg font-bold text-blue-800 mb-2 sm:mb-4">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-blue-200 dark:border-blue-800">
+          <h4 className="text-sm sm:text-lg font-bold text-blue-800 dark:text-blue-300 mb-2 sm:mb-4">
             {T('revenue')}
           </h4>
 
@@ -227,17 +227,17 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
 
             {/* Итог */}
             <div className="border-t-2 sm:border-t-4 border-blue-400 pt-2 sm:pt-3 mt-2 sm:mt-3">
-              <div className="flex justify-between items-center bg-blue-100 p-2 sm:p-4 rounded-lg">
-                <span className="font-bold text-sm sm:text-lg text-blue-900">{isMobile ? 'ИТОГО' : '= ЧИСТАЯ ВЫРУЧКА'}</span>
-                <span className="font-bold text-lg sm:text-2xl text-blue-900">{formatCurrency(calculations.revenue.net)}</span>
+              <div className="flex justify-between items-center bg-blue-100 dark:bg-blue-900/30 p-2 sm:p-4 rounded-lg">
+                <span className="font-bold text-sm sm:text-lg text-blue-900 dark:text-blue-200">{isMobile ? 'ИТОГО' : '= ЧИСТАЯ ВЫРУЧКА'}</span>
+                <span className="font-bold text-lg sm:text-2xl text-blue-900 dark:text-blue-200">{formatCurrency(calculations.revenue.net)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Прибыль */}
-        <div className={`bg-gradient-to-br ${calculations.profit.net >= 0 ? 'from-green-50 to-emerald-50 border-green-200' : 'from-red-50 to-rose-50 border-red-200'} rounded-lg sm:rounded-xl p-3 sm:p-5 border-2`}>
-          <h4 className={`text-sm sm:text-lg font-bold ${calculations.profit.net >= 0 ? 'text-green-800' : 'text-red-800'} mb-2 sm:mb-4`}>
+        <div className={`bg-gradient-to-br ${calculations.profit.net >= 0 ? 'from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800' : 'from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 border-red-200 dark:border-red-800'} rounded-lg sm:rounded-xl p-3 sm:p-5 border-2`}>
+          <h4 className={`text-sm sm:text-lg font-bold ${calculations.profit.net >= 0 ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'} mb-2 sm:mb-4`}>
             {calculations.profit.net >= 0 ? T('profit') : T('profitLoss')}
           </h4>
 
@@ -257,12 +257,12 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
             />
 
             {/* Итог */}
-            <div className={`border-t-2 sm:border-t-4 ${calculations.profit.net >= 0 ? 'border-green-400' : 'border-red-400'} pt-2 sm:pt-3 mt-2 sm:mt-3`}>
-              <div className={`flex justify-between items-center ${calculations.profit.net >= 0 ? 'bg-green-100' : 'bg-red-100'} p-2 sm:p-4 rounded-lg`}>
-                <span className={`font-bold text-sm sm:text-lg ${calculations.profit.net >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+            <div className={`border-t-2 sm:border-t-4 ${calculations.profit.net >= 0 ? 'border-green-400 dark:border-green-600' : 'border-red-400 dark:border-red-600'} pt-2 sm:pt-3 mt-2 sm:mt-3`}>
+              <div className={`flex justify-between items-center ${calculations.profit.net >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'} p-2 sm:p-4 rounded-lg`}>
+                <span className={`font-bold text-sm sm:text-lg ${calculations.profit.net >= 0 ? 'text-green-900 dark:text-green-200' : 'text-red-900 dark:text-red-200'}`}>
                   {isMobile ? 'ИТОГО' : '= ЧИСТАЯ ПРИБЫЛЬ'}
                 </span>
-                <span className={`font-bold text-lg sm:text-2xl ${calculations.profit.net >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+                <span className={`font-bold text-lg sm:text-2xl ${calculations.profit.net >= 0 ? 'text-green-900 dark:text-green-200' : 'text-red-900 dark:text-red-200'}`}>
                   {formatCurrency(calculations.profit.net)}
                 </span>
               </div>
@@ -271,19 +271,19 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
         </div>
 
         {/* Метрики доходности */}
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-purple-200">
-          <h4 className="text-sm sm:text-lg font-bold text-purple-800 mb-2 sm:mb-4">{T('metrics')}</h4>
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-purple-200 dark:border-purple-800">
+          <h4 className="text-sm sm:text-lg font-bold text-purple-800 dark:text-purple-300 mb-2 sm:mb-4">{T('metrics')}</h4>
           <div className="space-y-2 sm:space-y-4">
             {/* ROI */}
             <div className="bg-card p-2 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-900">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-purple-900 text-sm">{isMobile ? 'ROI' : 'ROI (Return on Investment)'}</span>
-                <span className="font-bold text-lg sm:text-xl text-purple-900">{calculations.profit.roi.toFixed(2)}%</span>
+                <span className="font-bold text-purple-900 dark:text-purple-200 text-sm">{isMobile ? 'ROI' : 'ROI (Return on Investment)'}</span>
+                <span className="font-bold text-lg sm:text-xl text-purple-900 dark:text-purple-200">{calculations.profit.roi.toFixed(2)}%</span>
               </div>
               {!isMobile && (
                 <div className="font-mono text-xs mt-2 space-y-1 text-muted-foreground">
                   <div>= (Прибыль ÷ Затраты) × 100%</div>
-                  <div className="text-purple-700">= ({formatCurrency(calculations.profit.net)} ÷ {formatCurrency(calculations.costs.total)}) × 100%</div>
+                  <div className="text-purple-700 dark:text-purple-400">= ({formatCurrency(calculations.profit.net)} ÷ {formatCurrency(calculations.costs.total)}) × 100%</div>
                 </div>
               )}
             </div>
@@ -291,13 +291,13 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
             {/* IRR */}
             <div className="bg-card p-2 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-900">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-purple-900 text-sm">{isMobile ? 'IRR (год)' : 'IRR — годовая доходность'}</span>
-                <span className="font-bold text-lg sm:text-xl text-purple-900">{calculations.profit.irr.toFixed(2)}%</span>
+                <span className="font-bold text-purple-900 dark:text-purple-200 text-sm">{isMobile ? 'IRR (год)' : 'IRR — годовая доходность'}</span>
+                <span className="font-bold text-lg sm:text-xl text-purple-900 dark:text-purple-200">{calculations.profit.irr.toFixed(2)}%</span>
               </div>
               {!isMobile && (
                 <div className="font-mono text-xs mt-2 space-y-1 text-muted-foreground">
                   <div>= ((Выручка ÷ Затраты)^(12/мес) - 1) × 100%</div>
-                  <div className="text-purple-700">= (({formatCurrency(calculations.revenue.net)} ÷ {formatCurrency(calculations.costs.total)})^(12/{calculations.totalMonths}) - 1) × 100%</div>
+                  <div className="text-purple-700 dark:text-purple-400">= (({formatCurrency(calculations.revenue.net)} ÷ {formatCurrency(calculations.costs.total)})^(12/{calculations.totalMonths}) - 1) × 100%</div>
                 </div>
               )}
             </div>
@@ -305,9 +305,9 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
 
           {/* Пояснения - только десктоп */}
           {!isMobile && (
-            <div className="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-              <p className="text-sm text-indigo-900"><strong>💡 ROI vs IRR:</strong></p>
-              <ul className="text-xs text-indigo-800 mt-2 space-y-1 ml-4 list-disc">
+            <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg border border-indigo-200 dark:border-indigo-800">
+              <p className="text-sm text-indigo-900 dark:text-indigo-200"><strong>💡 ROI vs IRR:</strong></p>
+              <ul className="text-xs text-indigo-800 dark:text-indigo-300 mt-2 space-y-1 ml-4 list-disc">
                 <li><strong>ROI</strong> — общая доходность, НЕ учитывает время</li>
                 <li><strong>IRR</strong> — годовая ставка, учитывает срок</li>
               </ul>
@@ -316,23 +316,23 @@ export const DetailedBreakdown: React.FC<DetailedBreakdownProps> = ({ params, ca
         </div>
 
         {/* Точка безубыточности */}
-        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-yellow-200">
-          <h4 className="text-sm sm:text-lg font-bold text-yellow-800 mb-2 sm:mb-4">{T('breakeven')}</h4>
+        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 rounded-lg sm:rounded-xl p-3 sm:p-5 border-2 border-yellow-200 dark:border-yellow-800">
+          <h4 className="text-sm sm:text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-2 sm:mb-4">{T('breakeven')}</h4>
           <div className="bg-card p-2 sm:p-4 rounded-lg border border-yellow-200 dark:border-yellow-900">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground text-sm">{isMobile ? 'Мин. цена' : 'Минимальная цена продажи'}</span>
-              <span className="font-bold text-lg sm:text-xl text-yellow-900">{formatCurrency(calculations.breakEven)}</span>
+              <span className="font-bold text-lg sm:text-xl text-yellow-900 dark:text-yellow-200">{formatCurrency(calculations.breakEven)}</span>
             </div>
             {!isMobile && (
               <div className="font-mono text-xs mt-2 space-y-1 text-muted-foreground">
                 <div>= Затраты ÷ (1 - Комиссия × 1.05)</div>
-                <div className="text-yellow-700">= {formatCurrency(calculations.costs.total)} ÷ (1 - {params.sellerCommission}% × 1.05)</div>
+                <div className="text-yellow-700 dark:text-yellow-400">= {formatCurrency(calculations.costs.total)} ÷ (1 - {params.sellerCommission}% × 1.05)</div>
               </div>
             )}
           </div>
           {!isMobile && (
-            <div className="mt-3 p-3 bg-yellow-100 rounded-lg">
-              <p className="text-sm text-yellow-800">
+            <div className="mt-3 p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
                 <strong>⚠️</strong> Ниже {formatCurrency(calculations.breakEven)} — убыток.
               </p>
             </div>

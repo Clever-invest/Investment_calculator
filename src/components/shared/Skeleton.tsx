@@ -8,7 +8,7 @@ interface SkeletonProps {
 export function Skeleton({ className = '' }: SkeletonProps) {
   return (
     <div
-      className={`animate-pulse bg-slate-200 rounded ${className}`}
+      className={`animate-pulse bg-slate-200 dark:bg-slate-700 rounded ${className}`}
     />
   );
 }
@@ -19,7 +19,7 @@ export function SkeletonText({ className = '' }: SkeletonProps) {
 
 export function SkeletonCard({ className = '' }: SkeletonProps) {
   return (
-    <div className={`bg-white rounded-xl shadow-sm p-6 ${className}`}>
+    <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 ${className}`}>
       <Skeleton className="h-6 w-1/3 mb-4" />
       <Skeleton className="h-4 w-full mb-2" />
       <Skeleton className="h-4 w-2/3 mb-2" />

@@ -34,14 +34,14 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
       <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">
         {isMobile ? 'Ранняя продажа' : 'Рекомендации по ранней продаже'}
       </h3>
-      <div className="mb-3 sm:mb-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200 text-xs sm:text-sm">
-        <p className="text-indigo-800">
+      <div className="mb-3 sm:mb-4 p-3 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg border border-indigo-200 dark:border-indigo-800 text-xs sm:text-sm">
+        <p className="text-indigo-800 dark:text-indigo-200">
           {isMobile
             ? `После ремонта (${params.renovationMonths} мес) → экспозиция (+${params.listingMonths} мес)`
             : <><strong>Период продажи:</strong> после завершения ремонта ({params.renovationMonths} мес) до конца экспозиции (+{params.listingMonths} мес)</>
           }
         </p>
-        <p className="text-indigo-800 mt-2 hidden sm:block">
+        <p className="text-indigo-800 dark:text-indigo-200 mt-2 hidden sm:block">
           💡 <strong>Кликните на ROI или IRR</strong>, чтобы задать целевое значение и увидеть нужную цену.
         </p>
       </div>
@@ -50,52 +50,80 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
       {isMobile ? (
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {data.map((row, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-lg p-3 shadow-sm">
-              {/* Header: Неделя + Цена */}
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium">Нед. {row.week}</span>
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px]">
-                    {row.totalMonths} мес
+            <div key={idx} className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+              {/* Header row */}
+              <div className="grid grid-cols-2 bg-muted/50 border-b border-border text-xs font-medium">
+                <div className="px-3 py-2 border-r border-border">
+                  <span className="text-muted-foreground">Неделя продажи</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="font-bold text-foreground">{row.week}</span>
+                  </div>
+                </div>
+                <div className="px-3 py-2">
+                  <span className="text-muted-foreground">Всего месяцев</span>
+                  <div className="mt-0.5">
+                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-bold">
+                      {row.totalMonths} мес
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data rows */}
+              <div className="divide-y divide-border text-xs">
+                {/* Скидка */}
+                <div className="grid grid-cols-2 px-3 py-2">
+                  <span className="text-muted-foreground">Скидка</span>
+                  <span className="text-right text-red-600 dark:text-red-400 font-medium">
+                    {row.discount >= 0 ? '-' : '+'}{formatCurrency(Math.abs(row.discount))}
                   </span>
                 </div>
-                <span className="font-bold text-foreground">{formatCurrency(row.price)}</span>
+                {/* Цена */}
+                <div className="grid grid-cols-2 px-3 py-2">
+                  <span className="text-muted-foreground">Цена</span>
+                  <span className="text-right font-bold text-foreground">{formatCurrency(row.price)}</span>
+                </div>
+                {/* Прибыль */}
+                <div className="grid grid-cols-2 px-3 py-2">
+                  <span className="text-muted-foreground">Прибыль</span>
+                  <span className={`text-right font-medium ${row.profit > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {formatCurrency(row.profit)}
+                  </span>
+                </div>
+                {/* ROI */}
+                <div className="grid grid-cols-2 px-3 py-2">
+                  <span className="text-muted-foreground">ROI %</span>
+                  <button
+                    onClick={() => onEditWeek(`${row.week}-roi`)}
+                    className={`text-right font-medium ${parseFloat(row.roi) > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}
+                  >
+                    {row.roi}%
+                  </button>
+                </div>
+                {/* IRR */}
+                <div className="grid grid-cols-2 px-3 py-2">
+                  <span className="text-muted-foreground">IRR %</span>
+                  <button
+                    onClick={() => onEditWeek(`${row.week}-irr`)}
+                    className={`text-right font-medium ${parseFloat(row.irr) > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}
+                  >
+                    {row.irr}%
+                  </button>
+                </div>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-border my-2" />
-
-              {/* Metrics Row */}
-              <div className="flex justify-between items-center text-sm">
-                <button
-                  onClick={() => onEditWeek(`${row.week}-roi`)}
-                  className={`${parseFloat(row.roi) > 0 ? 'text-blue-600' : 'text-red-600'} font-medium`}
-                >
-                  ROI: {row.roi}%
-                </button>
-                <button
-                  onClick={() => onEditWeek(`${row.week}-irr`)}
-                  className={`${parseFloat(row.irr) > 0 ? 'text-purple-600' : 'text-red-600'} font-medium`}
-                >
-                  IRR: {row.irr}%
-                </button>
-              </div>
-
-              {/* Profit Row */}
-              <div className="flex justify-between items-center mt-2 text-xs">
-                <span className={`${row.profit > 0 ? 'text-green-600' : 'text-red-600'} font-medium`}>
-                  Прибыль: {formatCurrency(row.profit)}
-                </span>
-                {customMetrics[row.week] && (
+              {/* Reset button if custom metric */}
+              {customMetrics[row.week] && (
+                <div className="px-3 py-2 border-t border-border bg-muted/30">
                   <button
                     onClick={() => onClearMetric(row.week)}
                     className="text-[10px] text-muted-foreground hover:text-red-600 px-2 py-0.5 border border-border rounded"
                   >
                     Сброс
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -121,20 +149,20 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
                   <td className="px-3 sm:px-4 py-2">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-muted-foreground" />
-                      Неделя {row.week}
+                      {row.week}
                     </div>
                   </td>
                   <td className="px-3 sm:px-4 py-2 text-center">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[11px] sm:text-xs font-medium">
+                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full text-[11px] sm:text-xs font-medium">
                       {row.totalMonths} мес
                     </span>
                   </td>
-                  <td className="px-3 sm:px-4 py-2 text-right text-red-600 font-medium">
+                  <td className="px-3 sm:px-4 py-2 text-right text-red-600 dark:text-red-400 font-medium">
                     {row.discount >= 0 ? '-' : '+'}{formatCurrency(Math.abs(row.discount))}
                   </td>
                   <td className="px-3 sm:px-4 py-2 text-right font-medium">{formatCurrency(row.price)}</td>
                   <td className="px-3 sm:px-4 py-2 text-right">
-                    <span className={row.profit > 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span className={row.profit > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                       {formatCurrency(row.profit)}
                     </span>
                   </td>
@@ -162,7 +190,7 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
                     ) : (
                       <button
                         onClick={() => onEditWeek(`${row.week}-roi`)}
-                        className={`${parseFloat(row.roi) > 0 ? 'text-blue-600' : 'text-red-600'} font-medium hover:bg-blue-50 px-2 py-1 rounded transition-colors`}
+                        className={`${parseFloat(row.roi) > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'} font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1 rounded transition-colors`}
                       >
                         {row.roi}%
                       </button>
@@ -192,7 +220,7 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
                     ) : (
                       <button
                         onClick={() => onEditWeek(`${row.week}-irr`)}
-                        className={`${parseFloat(row.irr) > 0 ? 'text-purple-600' : 'text-red-600'} font-medium hover:bg-purple-50 px-2 py-1 rounded transition-colors`}
+                        className={`${parseFloat(row.irr) > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'} font-medium hover:bg-purple-50 dark:hover:bg-purple-900/30 px-2 py-1 rounded transition-colors`}
                       >
                         {row.irr}%
                       </button>
@@ -217,9 +245,9 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
 
       <div className="mt-4 space-y-3">
         {/* Формулы - только десктоп */}
-        <div className="hidden sm:block p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs sm:text-sm text-blue-800 font-medium mb-2">📊 Формулы расчёта:</p>
-          <div className="space-y-2 text-[11px] sm:text-sm text-blue-800">
+        <div className="hidden sm:block p-3 sm:p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">📊 Формулы расчёта:</p>
+          <div className="space-y-2 text-[11px] sm:text-sm text-blue-800 dark:text-blue-200">
             <div>
               <strong>ROI:</strong>
               <div className="mt-1 p-2 bg-card rounded border border-blue-100 dark:border-blue-900 font-mono text-[11px] sm:text-xs">
@@ -235,7 +263,7 @@ export const EarlySaleTable: React.FC<EarlySaleTableProps> = ({
           </div>
         </div>
 
-        <div className="p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-200 text-[11px] sm:text-sm text-purple-800">
+        <div className="p-3 sm:p-4 bg-purple-50 dark:bg-purple-950/50 rounded-lg border border-purple-200 dark:border-purple-800 text-[11px] sm:text-sm text-purple-800 dark:text-purple-200">
           {isMobile
             ? <><strong>ℹ️</strong> Нед. 0 = после ремонта</>
             : <><strong>Примечание:</strong> Неделя 0 = сразу после ремонта, Неделя {Math.round(params.listingMonths * 4.33)} = конец срока экспозиции (плановая дата)</>

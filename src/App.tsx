@@ -230,11 +230,11 @@ const FlipCalculator: React.FC = () => {
             <div className="md:col-span-2 space-y-4 sm:space-y-6">
               {/* Заголовок объекта */}
               {(params.propertyName || params.location) && (
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-indigo-200">
-                  <h3 className="text-base sm:text-lg font-bold text-gray-800">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-xl p-3 sm:p-4 border border-indigo-200 dark:border-indigo-800">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
                     {params.propertyName || 'Без названия'}
                   </h3>
-                  <div className="flex items-center gap-3 sm:gap-4 mt-1 text-xs sm:text-sm text-gray-600">
+                  <div className="flex items-center gap-3 sm:gap-4 mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {params.location && (
                       <span className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />

@@ -201,18 +201,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         {images.length < maxImages && (
           <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
             isUploading 
-              ? 'border-blue-400 bg-blue-50 cursor-wait' 
-              : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+              ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/50 cursor-wait' 
+              : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50'
           }`}>
             {isUploading ? (
               <>
                 <Loader2 size={18} className="animate-spin text-blue-500" />
-                <span className="text-blue-600 text-sm">Загрузка {Math.round(uploadProgress)}%</span>
+                <span className="text-blue-600 dark:text-blue-400 text-sm">Загрузка {Math.round(uploadProgress)}%</span>
               </>
             ) : (
               <>
-                <Upload size={18} className="text-gray-400" />
-                <span className="text-gray-500 text-sm">Добавить фото</span>
+                <Upload size={18} className="text-gray-400 dark:text-gray-500" />
+                <span className="text-gray-500 dark:text-gray-400 text-sm">Добавить фото</span>
               </>
             )}
             <input

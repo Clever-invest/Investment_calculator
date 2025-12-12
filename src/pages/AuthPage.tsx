@@ -102,38 +102,38 @@ export default function AuthPage() {
   // Показываем загрузку пока проверяется auth
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-gray-600">Загрузка...</p>
+          <p className="text-gray-600 dark:text-gray-400">Загрузка...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Calculator className="w-10 h-10 text-blue-600" />
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
               Флип-калькулятор
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Профессиональный анализ инвестиций в недвижимость
           </p>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 sm:p-8">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               {getTitle()}
             </h2>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
               {getDescription()}
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function AuthPage() {
 
           {/* Success message */}
           {message && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+            <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300 text-sm">
               {message}
             </div>
           )}

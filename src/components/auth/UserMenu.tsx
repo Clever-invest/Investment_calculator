@@ -109,7 +109,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onOpenAuth }) => {
             <button
               onClick={handleSignOut}
               disabled={loading}
-              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3"
+              className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 flex items-center gap-3"
             >
               <LogOut size={16} />
               Выйти

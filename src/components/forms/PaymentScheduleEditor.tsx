@@ -9,6 +9,7 @@ import type { PaymentScheduleItem } from '../../types/calculator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface PaymentScheduleEditorProps {
   schedule: PaymentScheduleItem[];
@@ -73,7 +74,7 @@ export const PaymentScheduleEditor: React.FC<PaymentScheduleEditorProps> = ({
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1">
                   <Label className="text-xs">Сумма</Label>
                   <Input
@@ -88,10 +89,9 @@ export const PaymentScheduleEditor: React.FC<PaymentScheduleEditorProps> = ({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Дата</Label>
-                  <Input
-                    type="date"
+                  <DatePicker
                     value={payment.date}
-                    onChange={(e) => updatePayment(index, 'date', e.target.value)}
+                    onChange={(value) => updatePayment(index, 'date', value)}
                   />
                 </div>
               </div>
@@ -107,8 +107,8 @@ export const PaymentScheduleEditor: React.FC<PaymentScheduleEditorProps> = ({
       )}
 
       {schedule.length > 0 && (
-        <div className="mt-3 p-3 bg-irr-50 rounded-lg border border-irr-200">
-          <div className="text-sm text-irr-600 font-medium">
+        <div className="mt-3 p-3 bg-irr-50 dark:bg-irr-950/50 rounded-lg border border-irr-200 dark:border-irr-800">
+          <div className="text-sm text-irr-600 dark:text-irr-400 font-medium">
             Итого по плану: {formatCurrency(totalAmount)}
           </div>
         </div>

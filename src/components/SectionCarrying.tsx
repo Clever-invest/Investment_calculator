@@ -14,8 +14,8 @@ interface SectionCarryingProps {
 
 export const SectionCarrying: React.FC<SectionCarryingProps> = ({ input, onChange, errors }) => {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 shadow-sm border border-gray-200 mb-4">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">📊 Носимые расходы</h3>
+    <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+      <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">📊 Носимые расходы</h3>
       
       <InputField
         label="Service Charge (годовой)"

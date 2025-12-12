@@ -16,8 +16,8 @@ export const SectionTiming: React.FC<SectionTimingProps> = ({ input, onChange, e
   const monthsTotal = input.monthsRepair + input.monthsExposure;
   
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 shadow-sm border border-gray-200 mb-4">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">⏱️ Сроки</h3>
+    <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+      <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">⏱️ Сроки</h3>
       
       <InputField
         label="Срок ремонта (месяцев)"
@@ -40,10 +40,10 @@ export const SectionTiming: React.FC<SectionTimingProps> = ({ input, onChange, e
         tooltip="Время от окончания ремонта до продажи"
       />
       
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+      <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-blue-900">Общий срок сделки:</span>
-          <span className="text-2xl font-bold text-blue-600">{monthsTotal} мес</span>
+          <span className="font-semibold text-blue-900 dark:text-blue-200">Общий срок сделки:</span>
+          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{monthsTotal} мес</span>
         </div>
       </div>
     </div>

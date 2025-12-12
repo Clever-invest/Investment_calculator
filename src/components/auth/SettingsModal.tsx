@@ -120,10 +120,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
   const content = (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'profile' | 'appearance' | 'security')} className="w-full">
-      <TabsList className="grid !w-full grid-cols-3">
-        <TabsTrigger value="profile">Профиль</TabsTrigger>
-        <TabsTrigger value="appearance">Вид</TabsTrigger>
-        <TabsTrigger value="security">Безопасность</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+        <TabsTrigger value="profile" className="text-xs sm:text-sm px-2 py-2">Профиль</TabsTrigger>
+        <TabsTrigger value="appearance" className="text-xs sm:text-sm px-2 py-2">Вид</TabsTrigger>
+        <TabsTrigger value="security" className="text-xs sm:text-sm px-2 py-2">Безопасность</TabsTrigger>
       </TabsList>
       
       <div className="mt-4">
@@ -133,7 +133,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             className={cn(
               'mb-4 p-3 rounded-lg flex items-center gap-2',
               message.type === 'success'
-                ? 'bg-green-50 text-green-700'
+                ? 'bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-300'
                 : 'bg-destructive/10 text-destructive'
             )}
           >
@@ -312,11 +312,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl pb-safe">
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl pb-safe px-4">
           <SheetHeader className="pb-4">
             <SheetTitle>Настройки</SheetTitle>
           </SheetHeader>
-          <div className="overflow-y-auto flex-1 -mx-4 px-4">
+          <div className="overflow-y-auto flex-1 pb-6">
             {content}
           </div>
         </SheetContent>

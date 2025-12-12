@@ -82,7 +82,7 @@ define(['./workbox-21a80088'], (function (workbox) { 'use strict';
     "revision": "d3b122656a89942aa3164f5ccd56d9ca"
   }, {
     "url": "/Investment_calculator/offline.html",
-    "revision": "0.0s5tt7s4qg8"
+    "revision": "0.omj56712i4"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("/Investment_calculator/offline.html"), {

@@ -31,14 +31,14 @@ export function UpdatePrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm bg-white rounded-lg shadow-xl border border-slate-200 p-4">
+    <div className="fixed bottom-4 right-4 z-50 max-w-sm bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-4">
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <RefreshCw className="w-5 h-5 text-blue-600" />
+        <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+          <RefreshCw className="w-5 h-5 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-slate-900">Доступно обновление</h3>
-          <p className="text-sm text-slate-600 mt-1">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Доступно обновление</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Новая версия приложения готова к установке.
           </p>
           <div className="flex gap-2 mt-3">
@@ -50,7 +50,7 @@ export function UpdatePrompt() {
             </button>
             <button
               onClick={handleDismiss}
-              className="px-3 py-1.5 text-slate-600 text-sm font-medium hover:bg-slate-100 rounded-md transition-colors"
+              className="px-3 py-1.5 text-slate-600 dark:text-slate-400 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
             >
               Позже
             </button>

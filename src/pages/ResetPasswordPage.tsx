@@ -85,24 +85,24 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Проверка ссылки...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Проверка ссылки...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock size={32} className="text-blue-600" />
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock size={32} className="text-blue-600 dark:text-blue-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Новый пароль</h1>
-          <p className="text-gray-500 mt-2">Введите новый пароль для вашего аккаунта</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Новый пароль</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Введите новый пароль для вашего аккаунта</p>
         </div>
 
         {/* Message */}
@@ -110,8 +110,8 @@ export const ResetPasswordPage: React.FC = () => {
           <div
             className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-700'
+                ? 'bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-300'
+                : 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300'
             }`}
           >
             {message.type === 'success' ? (

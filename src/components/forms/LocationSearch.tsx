@@ -162,7 +162,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
               style={{ border: 0 }}
               title="Карта локации"
             />
-            <div className="bg-white px-3 py-2 border-t border-gray-200">
+            <div className="bg-white dark:bg-slate-800 px-3 py-2 border-t border-gray-200 dark:border-gray-700">
               <a
                 href={getMapFullUrl(coordinates)}
                 target="_blank"
