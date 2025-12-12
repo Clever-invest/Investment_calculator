@@ -6,15 +6,12 @@ import { devtools } from 'zustand/middleware';
 import type { CustomMetric } from '../types/calculator';
 
 // Типы вкладок
-export type TabId = 'overview' | 'formula' | 'sensitivity' | 'early' | 'saved';
+export type TabId = 'formula' | 'early';
 
 // Информация о вкладках
 export const TABS: { id: TabId; label: string; shortLabel: string }[] = [
-  { id: 'overview', label: 'Водопад', shortLabel: 'Обзор' },
   { id: 'formula', label: 'Детальный расчет', shortLabel: 'Расчёт' },
-  { id: 'sensitivity', label: 'Сенситивность', shortLabel: 'Анализ' },
   { id: 'early', label: 'Ранняя продажа', shortLabel: 'Продажа' },
-  { id: 'saved', label: 'Сохраненные', shortLabel: 'Объекты' },
 ];
 
 interface UIState {
@@ -40,7 +37,7 @@ export const useUIStore = create<UIState>()(
   devtools(
     (set) => ({
       // Начальное состояние
-      activeTab: 'overview',
+      activeTab: 'formula',
       editingWeek: null,
       customMetrics: {},
       isSidebarOpen: true,

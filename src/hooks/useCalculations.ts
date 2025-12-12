@@ -6,8 +6,6 @@ import { useMemo } from 'react';
 import type {
   CalculatorParams,
   Calculations,
-  WaterfallDataItem,
-  SensitivityDataItem,
   EarlyDiscountDataItem,
   CustomMetric
 } from '../types/calculator';
@@ -116,70 +114,6 @@ export const useCalculations = (params: CalculatorParams): Calculations => {
       remainingDebt: dealType === 'offplan' ? remainingDebt : undefined
     };
   }, [params]);
-};
-
-export const useWaterfallData = (
-  params: CalculatorParams,
-  calculations: Calculations
-): WaterfallDataItem[] => {
-  return useMemo(() => {
-    const data: WaterfallDataItem[] = [
-      { name: 'Цена продажи', value: calculations.revenue.sellingPrice, fill: '#10b981' },
-      { name: 'Комиссия продавца', value: -calculations.revenue.sellerCommission, fill: '#ef4444' },
-      { name: 'VAT (5%)', value: -calculations.revenue.sellerCommissionVAT, fill: '#ef4444' },
-    ];
-
-    if (params.dealType === 'offplan' && calculations.remainingDebt && calculations.remainingDebt > 0) {
-      data.push({ name: '💳 Остаток долга', value: -calculations.remainingDebt, fill: '#9333ea' });
-    }
-
-    data.push(
-      { name: params.dealType === 'offplan' ? 'Оплачено застройщику' : 'Покупка', value: -calculations.costs.purchase, fill: '#f59e0b' },
-      { name: 'DLD/рег.', value: -calculations.costs.dld, fill: '#f59e0b' },
-      { name: 'Комиссия покупателя', value: -calculations.costs.buyerCommission, fill: '#f59e0b' },
-      { name: 'VAT (5%)', value: -calculations.costs.buyerCommissionVAT, fill: '#f59e0b' },
-      { name: 'Ремонт', value: -calculations.costs.renovation, fill: '#f59e0b' },
-      { name: 'Service Charge', value: -calculations.costs.serviceCharge, fill: '#f59e0b' },
-      { name: 'DEWA AC', value: -calculations.costs.dewaAc, fill: '#f59e0b' },
-      { name: 'Trustee Office (покупка)', value: -calculations.costs.trusteeOfficeFee, fill: '#f59e0b' },
-      { name: 'Чистая прибыль', value: calculations.profit.net, fill: calculations.profit.net > 0 ? '#10b981' : '#ef4444' }
-    );
-
-    return data;
-  }, [calculations, params.dealType]);
-};
-
-export const useSensitivityData = (
-  params: CalculatorParams,
-  calculations: Calculations
-): SensitivityDataItem[] => {
-  return useMemo(() => {
-    const basePrice = params.sellingPrice;
-    const baseReno = params.renovationBudget;
-    const variations = [-10, -5, 0, 5, 10];
-
-    return variations.map(pct => {
-      const priceVar = basePrice * (1 + pct / 100);
-      const renoVar = baseReno * (1 + pct / 100);
-
-      const sellerCommAmt = priceVar * (params.sellerCommission / 100);
-      const sellerCommVAT = sellerCommAmt * 0.05;
-      const sellerCommTotal = sellerCommAmt + sellerCommVAT;
-      const revenue1 = priceVar - sellerCommTotal;
-      const profit1 = revenue1 - calculations.costs.total;
-
-      const contingencyVar = renoVar * (params.contingency / 100);
-      const totalRenoVar = renoVar + contingencyVar;
-      const costsVar = calculations.costs.total - calculations.costs.renovation + totalRenoVar;
-      const profit2 = calculations.revenue.net - costsVar;
-
-      return {
-        variation: `${pct > 0 ? '+' : ''}${pct}%`,
-        priceChange: profit1,
-        renoChange: profit2
-      };
-    });
-  }, [calculations, params]);
 };
 
 export const useEarlyDiscountData = (

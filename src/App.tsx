@@ -3,22 +3,12 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Download, MapPin, Home } from 'lucide-react';
+import { MapPin, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 // Компоненты авторизации
 import { AuthModal, UserMenu } from './components/auth';
 
@@ -27,20 +17,13 @@ import { PropertyInfoForm, DealParamsForm } from './components/forms';
 // Компоненты результатов
 import {
   MetricsGrid,
-  WaterfallChart,
   DetailedBreakdown,
-  SensitivityChart,
   EarlySaleTable,
   OffPlanInfo
 } from './components/results';
-// Компоненты проектов
-import { SavedPropertiesList } from './components/projects';
-import { exportDealSheetHTML } from './components/projects/DealSheetExport';
 // Хуки расчётов
 import {
   useCalculations,
-  useWaterfallData,
-  useSensitivityData,
   useEarlyDiscountData
 } from './hooks/useCalculations';
 // Сервисы
@@ -54,8 +37,7 @@ import {
   TABS
 } from './stores';
 // Типы
-import type { CalculatorParams, SavedProperty } from './types/calculator';
-import { formatCurrency } from './utils/format';
+import type { CalculatorParams } from './types/calculator';
 import { haptic } from './utils/haptic';
 
 const FlipCalculator: React.FC = () => {
@@ -65,7 +47,6 @@ const FlipCalculator: React.FC = () => {
   // Auth Modal state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
-  const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
   // Scroll state для compact MetricsGrid
   const [isScrolled, setIsScrolled] = useState(false);
@@ -81,14 +62,12 @@ const FlipCalculator: React.FC = () => {
   const coordinates = useCalculatorStore((state) => state.coordinates);
   const updateParam = useCalculatorStore((state) => state.updateParam);
   const setCoordinates = useCalculatorStore((state) => state.setCoordinates);
-  const loadFromSaved = useCalculatorStore((state) => state.loadFromSaved);
   const resetParams = useCalculatorStore((state) => state.resetParams);
 
   // Properties Store
   const properties = usePropertiesStore((state) => state.properties);
   const addProperty = usePropertiesStore((state) => state.addProperty);
   const addPropertyAsync = usePropertiesStore((state) => state.addPropertyAsync);
-  const removeProperty = usePropertiesStore((state) => state.deleteProperty);
   const syncWithCloud = usePropertiesStore((state) => state.syncWithCloud);
   const migrateLocalToCloud = usePropertiesStore((state) => state.migrateLocalToCloud);
   const isSynced = usePropertiesStore((state) => state.isSynced);
@@ -101,12 +80,9 @@ const FlipCalculator: React.FC = () => {
   const customMetrics = useUIStore((state) => state.customMetrics);
   const setCustomMetric = useUIStore((state) => state.setCustomMetric);
   const clearCustomMetric = useUIStore((state) => state.clearCustomMetric);
-  const clearAllCustomMetrics = useUIStore((state) => state.clearAllCustomMetrics);
 
   // Расчёты через хуки
   const calculations = useCalculations(params);
-  const waterfallData = useWaterfallData(params, calculations);
-  const sensitivityData = useSensitivityData(params, calculations);
   const earlyDiscountData = useEarlyDiscountData(params, calculations, customMetrics);
 
   // Инициализация авторизации происходит в Router.tsx через AuthInitializer
@@ -205,64 +181,11 @@ const FlipCalculator: React.FC = () => {
     }
   };
 
-  // Загрузка объекта
-  const handleLoadProperty = (property: SavedProperty) => {
-    loadFromSaved(
-      {
-        propertyName: property.propertyName,
-        location: property.location,
-        propertyType: property.propertyType ?? 'apartment',
-        dealType: property.dealType ?? 'secondary',
-        bedrooms: property.bedrooms ?? 1,
-        bathrooms: property.bathrooms ?? 1,
-        unitAreaSqft: property.unitAreaSqft ?? 0,
-        plotAreaSqft: property.plotAreaSqft ?? 0,
-        propertyImages: property.propertyImages ?? [],
-        purchasePrice: property.purchasePrice,
-        sellingPrice: property.sellingPrice,
-        dldFees: property.dldFees,
-        buyerCommission: property.buyerCommission,
-        sellerCommission: property.sellerCommission,
-        renovationBudget: property.renovationBudget,
-        contingency: property.contingency,
-        renovationMonths: property.renovationMonths,
-        listingMonths: property.listingMonths,
-        serviceChargeYearly: property.serviceChargeYearly ?? 6000,
-        dewaAcMonthly: property.dewaAcMonthly ?? 500,
-        trusteeOfficeFee: property.trusteeOfficeFee ?? 5000,
-        targetReturn: property.targetReturn,
-        marketGrowth: property.marketGrowth,
-        renovationComments: property.renovationComments ?? '',
-        paidAmount: property.paidAmount ?? 0,
-        paymentSchedule: property.paymentSchedule ?? []
-      },
-      property.coordinates
-    );
-    clearAllCustomMetrics();
-  };
-
-  // Удаление объекта
-  const handleDeleteProperty = (id: string) => {
-    setDeletePropertyId(id);
-  };
-
-  const confirmDeleteProperty = () => {
-    if (deletePropertyId) {
-      haptic.heavy();
-      removeProperty(deletePropertyId);
-      setDeletePropertyId(null);
-    }
-  };
-
   // Редактирование метрик ранней продажи
   const handleMetricEdit = (week: number, type: 'roi' | 'irr', value: string) => {
     setCustomMetric(week, { type, value });
   };
 
-  // Экспорт листа сделки
-  const handleExportDealSheet = () => {
-    exportDealSheetHTML(params, calculations, coordinates, formatCurrency);
-  };
 
   return (
     <div className="min-h-screen bg-background p-3 sm:p-4 pb-24 md:pb-4">
@@ -278,29 +201,8 @@ const FlipCalculator: React.FC = () => {
                 </h1>
               </div>
 
-              {/* Кнопки справа на мобильных */}
-              <div className="flex items-center gap-1.5 sm:hidden">
-                <button
-                  onClick={handleExportDealSheet}
-                  className="flex items-center justify-center w-9 h-9 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                  title="Экспорт PDF"
-                >
-                  <Download size={18} />
-                </button>
-                <UserMenu onOpenAuth={() => setIsAuthModalOpen(true)} />
-              </div>
-
-              {/* Кнопки справа на десктопе */}
-              <div className="hidden sm:flex items-center gap-2">
-                <button
-                  onClick={handleExportDealSheet}
-                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm"
-                >
-                  <Download size={18} />
-                  <span>Экспорт PDF</span>
-                </button>
-                <UserMenu onOpenAuth={() => setIsAuthModalOpen(true)} />
-              </div>
+              {/* Меню пользователя */}
+              <UserMenu onOpenAuth={() => setIsAuthModalOpen(true)} />
             </div>
             <p className="text-blue-100 text-xs sm:text-sm md:text-base hidden sm:block">
               Интерактивный анализ сделки с мгновенным расчетом маржи и распределения долей
@@ -369,7 +271,7 @@ const FlipCalculator: React.FC = () => {
                         value={tab.id}
                         className="px-4 sm:px-6 py-3 text-sm sm:text-base font-medium rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none bg-transparent"
                       >
-                        {tab.id === 'saved' ? `${tab.label} (${properties.length})` : tab.label}
+                        {tab.label}
                       </TabsTrigger>
                     ))}
                   </TabsList>
@@ -380,14 +282,8 @@ const FlipCalculator: React.FC = () => {
                 {/* Mobile показывает только контент, навигация внизу */}
                 <div className="bg-card rounded-xl border border-border md:border-0 md:rounded-none">
                   <div className="p-3 sm:p-6">
-                    <TabsContent value="overview" className="mt-0">
-                      <WaterfallChart data={waterfallData} calculations={calculations} />
-                    </TabsContent>
                     <TabsContent value="formula" className="mt-0">
                       <DetailedBreakdown params={params} calculations={calculations} />
-                    </TabsContent>
-                    <TabsContent value="sensitivity" className="mt-0">
-                      <SensitivityChart data={sensitivityData} />
                     </TabsContent>
                     <TabsContent value="early" className="mt-0">
                       <EarlySaleTable
@@ -398,13 +294,6 @@ const FlipCalculator: React.FC = () => {
                         onEditWeek={setEditingWeek}
                         onMetricEdit={handleMetricEdit}
                         onClearMetric={clearCustomMetric}
-                      />
-                    </TabsContent>
-                    <TabsContent value="saved" className="mt-0">
-                      <SavedPropertiesList
-                        properties={properties}
-                        onLoad={handleLoadProperty}
-                        onDelete={handleDeleteProperty}
                       />
                     </TabsContent>
                   </div>
@@ -445,24 +334,6 @@ const FlipCalculator: React.FC = () => {
         </div>
       )}
 
-      {/* Диалог подтверждения удаления */}
-      <AlertDialog open={!!deletePropertyId} onOpenChange={(open) => !open && setDeletePropertyId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Удалить объект?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Это действие нельзя отменить. Объект будет удалён навсегда.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteProperty} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Удалить
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Модальное окно авторизации */}
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -474,7 +345,6 @@ const FlipCalculator: React.FC = () => {
         <BottomNav
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          propertiesCount={properties.length}
         />
       )}
 
