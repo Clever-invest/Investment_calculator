@@ -49,7 +49,6 @@ const FlipCalculator: React.FC = () => {
 
   // Auth Modal state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
 
   // Scroll state для compact MetricsGrid
   const [isScrolled, setIsScrolled] = useState(false);
@@ -77,7 +76,6 @@ const FlipCalculator: React.FC = () => {
   const addPropertyAsync = usePropertiesStore((state) => state.addPropertyAsync);
   const updateProperty = usePropertiesStore((state) => state.updateProperty);
   const syncWithCloud = usePropertiesStore((state) => state.syncWithCloud);
-  const migrateLocalToCloud = usePropertiesStore((state) => state.migrateLocalToCloud);
   const isSynced = usePropertiesStore((state) => state.isSynced);
 
   // UI Store
@@ -111,15 +109,10 @@ const FlipCalculator: React.FC = () => {
   // ProtectedRoute гарантирует что user авторизован когда мы здесь
   useEffect(() => {
     if (user && !isSynced) {
-      // Проверяем, есть ли локальные данные для миграции
-      if (properties.length > 0) {
-        setShowMigrationPrompt(true);
-      } else {
-        // Просто синхронизируем с облаком
-        syncWithCloud();
-      }
+      // Синхронизируем с облаком
+      syncWithCloud();
     }
-  }, [user, isSynced, properties.length, syncWithCloud]);
+  }, [user, isSynced, syncWithCloud]);
 
   // Сброс режима редактирования при переключении вкладок (кроме formula)
   useEffect(() => {
@@ -144,16 +137,6 @@ const FlipCalculator: React.FC = () => {
     migrateOldData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Обработчик миграции локальных данных в облако
-  const handleMigrateToCloud = async () => {
-    await migrateLocalToCloud();
-    setShowMigrationPrompt(false);
-  };
-
-  const handleSkipMigration = () => {
-    syncWithCloud();
-    setShowMigrationPrompt(false);
-  };
 
   // Обработчик изменения параметров
   const handleParamChange = (key: keyof CalculatorParams, value: unknown) => {
@@ -463,36 +446,6 @@ const FlipCalculator: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Диалог миграции данных */}
-      {showMigrationPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div className="relative bg-card rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <h3 className="text-xl font-bold text-foreground mb-3">
-              Синхронизация данных
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              У вас есть {properties.length} сохранённых объектов локально.
-              Хотите загрузить их в облако для синхронизации между устройствами?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleSkipMigration}
-                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted transition-colors"
-              >
-                Пропустить
-              </button>
-              <button
-                onClick={handleMigrateToCloud}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Загрузить в облако
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Модальное окно авторизации */}
       <AuthModal
