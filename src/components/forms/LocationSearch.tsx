@@ -64,7 +64,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       setShowSuggestions(results.length > 0);
     } catch (error) {
       if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Location search error:', error);
+        console.error('Location search error:', error instanceof Error ? error.message : String(error));
         setSuggestions([]);
       }
     } finally {

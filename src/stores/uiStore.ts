@@ -6,12 +6,13 @@ import { devtools } from 'zustand/middleware';
 import type { CustomMetric } from '../types/calculator';
 
 // Типы вкладок
-export type TabId = 'formula' | 'early';
+export type TabId = 'formula' | 'early' | 'shared';
 
 // Информация о вкладках
 export const TABS: { id: TabId; label: string; shortLabel: string }[] = [
   { id: 'formula', label: 'Детальный расчет', shortLabel: 'Расчёт' },
   { id: 'early', label: 'Ранняя продажа', shortLabel: 'Продажа' },
+  { id: 'shared', label: 'Общие объекты', shortLabel: 'Общие' },
 ];
 
 interface UIState {

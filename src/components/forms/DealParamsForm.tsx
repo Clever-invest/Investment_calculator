@@ -21,6 +21,7 @@ interface DealParamsFormProps {
   params: CalculatorParams;
   onParamChange: (key: keyof CalculatorParams, value: CalculatorParams[keyof CalculatorParams]) => void;
   onSave: () => void;
+  isEditing?: boolean;
 }
 
 // Компонент слайдера с лейблом (shadcn Slider с touch-friendly 44px target)
@@ -101,7 +102,8 @@ const LABELS = {
 export const DealParamsForm: React.FC<DealParamsFormProps> = ({
   params,
   onParamChange,
-  onSave
+  onSave,
+  isEditing = false
 }) => {
   const isMobile = useIsMobile();
   const L = (key: keyof typeof LABELS) => isMobile ? LABELS[key].short : LABELS[key].full;
@@ -314,7 +316,7 @@ export const DealParamsForm: React.FC<DealParamsFormProps> = ({
 
         <Button onClick={onSave} className="w-full mt-4" size="lg">
           <Save className="w-4 h-4 mr-2" />
-          Сохранить объект
+          {isEditing ? 'Обновить объект' : 'Сохранить объект'}
         </Button>
       </CardContent>
     </Card>

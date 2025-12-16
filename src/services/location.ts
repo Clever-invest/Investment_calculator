@@ -45,7 +45,7 @@ export const searchLocation = async (
       return await response.json();
     }
   } catch (error) {
-    console.warn('Geocoding error:', error);
+    console.warn('Geocoding error:', error instanceof Error ? error.message : String(error));
   }
   
   return [];

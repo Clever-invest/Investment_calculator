@@ -126,7 +126,7 @@ export const getProfile = async () => {
     .single();
 
   if (error) {
-    console.error('Error fetching profile:', error);
+    console.error('Error fetching profile:', error.message);
     return null;
   }
 

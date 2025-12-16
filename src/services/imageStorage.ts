@@ -9,6 +9,13 @@ export const uploadImage = async (
   file: File,
   index: number = 0
 ): Promise<string> => {
+  // Валидация параметров
+  if (!userId || !propertyId) {
+    const error = new Error('Invalid parameters: missing userId or propertyId');
+    console.error('[imageStorage] uploadImage validation error: missing required parameters');
+    throw error;
+  }
+
   const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const fileName = `${userId}/${propertyId}/image_${index}.${fileExt}`;
 
@@ -20,7 +27,13 @@ export const uploadImage = async (
     });
 
   if (error) {
-    console.error('Error uploading image:', error);
+    console.error('[imageStorage] Error uploading image:', {
+      fileName: fileName.split('/').pop(), // Только имя файла, без пути
+      bucket: BUCKET_NAME,
+      fileSize: file.size,
+      fileType: file.type,
+      error: error.message
+    });
     throw error;
   }
 
@@ -41,16 +54,49 @@ export const getSignedImageUrl = async (
   path: string,
   expiresIn: number = 3600
 ): Promise<string> => {
-  const { data, error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .createSignedUrl(path, expiresIn);
-
-  if (error) {
-    console.error('Error getting signed URL:', error);
+  // Валидация пути
+  if (!path || typeof path !== 'string' || path.trim().length === 0) {
+    const error = new Error('Invalid image path: path is empty or invalid');
+    console.error('[imageStorage] getSignedImageUrl validation error: invalid path format');
     throw error;
   }
 
-  return data.signedUrl;
+  // Проверка формата пути (должен быть userId/propertyId/image_X.ext)
+  const pathPattern = /^[^/]+\/[^/]+\/image_\d+\.[a-zA-Z0-9]+$/;
+  if (!pathPattern.test(path)) {
+    console.warn('[imageStorage] Unexpected path format detected');
+    // Не выбрасываем ошибку, так как формат может отличаться
+  }
+
+  try {
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .createSignedUrl(path, expiresIn);
+
+    if (error) {
+      console.error('[imageStorage] Error getting signed URL:', {
+        bucket: BUCKET_NAME,
+        expiresIn,
+        error: error.message
+      });
+      throw error;
+    }
+
+    if (!data?.signedUrl) {
+      const error = new Error('No signed URL returned from storage');
+      console.error('[imageStorage] No signed URL in response');
+      throw error;
+    }
+
+    return data.signedUrl;
+  } catch (error) {
+    // Дополнительное логирование для диагностики
+    console.error('[imageStorage] getSignedImageUrl failed:', {
+      bucket: BUCKET_NAME,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    throw error;
+  }
 };
 
 // Delete image
@@ -60,7 +106,7 @@ export const deleteImage = async (path: string): Promise<void> => {
     .remove([path]);
 
   if (error) {
-    console.error('Error deleting image:', error);
+    console.error('Error deleting image:', error.message);
     throw error;
   }
 };
@@ -78,7 +124,7 @@ export const deletePropertyImages = async (
     .list(folderPath);
 
   if (listError) {
-    console.error('Error listing images:', listError);
+    console.error('Error listing images:', listError.message);
     return;
   }
 
@@ -91,7 +137,7 @@ export const deletePropertyImages = async (
     .remove(filePaths);
 
   if (error) {
-    console.error('Error deleting images:', error);
+    console.error('Error deleting images:', error.message);
     throw error;
   }
 };

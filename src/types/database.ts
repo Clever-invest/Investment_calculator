@@ -52,6 +52,7 @@ export type Database = {
           name: string
           notes: string | null
           params: Json
+          serial_number: string | null
           updated_at: string | null
           user_id: string
         }
@@ -67,6 +68,7 @@ export type Database = {
           name: string
           notes?: string | null
           params?: Json
+          serial_number?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -82,6 +84,7 @@ export type Database = {
           name?: string
           notes?: string | null
           params?: Json
+          serial_number?: string | null
           updated_at?: string | null
           user_id?: string
         }

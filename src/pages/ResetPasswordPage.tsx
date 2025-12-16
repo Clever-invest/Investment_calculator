@@ -31,7 +31,7 @@ export const ResetPasswordPage: React.FC = () => {
           });
         }
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('Session check error:', error instanceof Error ? error.message : String(error));
         setMessage({ type: 'error', text: 'Ошибка проверки сессии' });
       } finally {
         setCheckingSession(false);
@@ -73,7 +73,7 @@ export const ResetPasswordPage: React.FC = () => {
         navigate('/');
       }, 2000);
     } catch (error) {
-      console.error('Update password error:', error);
+      console.error('Update password error:', error instanceof Error ? error.message : String(error));
       setMessage({ 
         type: 'error', 
         text: error instanceof Error ? error.message : 'Ошибка при смене пароля' 

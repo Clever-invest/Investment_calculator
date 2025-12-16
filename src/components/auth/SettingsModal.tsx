@@ -90,7 +90,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
       setMessage({ type: 'success', text: 'Профиль обновлён' });
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error('Update profile error:', error instanceof Error ? error.message : String(error));
       setMessage({ type: 'error', text: 'Ошибка обновления профиля' });
     } finally {
       setLoading(false);

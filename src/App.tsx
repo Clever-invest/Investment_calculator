@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Home } from 'lucide-react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
 import { BottomNav } from '@/components/layout/BottomNav';
@@ -21,6 +22,7 @@ import {
   EarlySaleTable,
   OffPlanInfo
 } from './components/results';
+import { SharedPropertiesList } from './components/results/SharedPropertiesList';
 // Хуки расчётов
 import {
   useCalculations,
@@ -28,6 +30,7 @@ import {
 } from './hooks/useCalculations';
 // Сервисы
 import { loadAllProperties } from './services/storage';
+import { getProperty, updateProperty as updatePropertyApi } from './services/propertiesApi';
 // Stores
 import {
   useCalculatorStore,
@@ -37,7 +40,7 @@ import {
   TABS
 } from './stores';
 // Типы
-import type { CalculatorParams } from './types/calculator';
+import type { CalculatorParams, Coordinates } from './types/calculator';
 import { haptic } from './utils/haptic';
 
 const FlipCalculator: React.FC = () => {
@@ -53,6 +56,9 @@ const FlipCalculator: React.FC = () => {
 
   // Temporary property ID for new properties (used for image uploads)
   const [tempPropertyId, setTempPropertyId] = useState<string>(() => crypto.randomUUID());
+  
+  // ID редактируемого объекта (null если создаём новый)
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
 
   // Auth Store
   const user = useAuthStore((state) => state.user);
@@ -63,11 +69,13 @@ const FlipCalculator: React.FC = () => {
   const updateParam = useCalculatorStore((state) => state.updateParam);
   const setCoordinates = useCalculatorStore((state) => state.setCoordinates);
   const resetParams = useCalculatorStore((state) => state.resetParams);
+  const loadFromSaved = useCalculatorStore((state) => state.loadFromSaved);
 
   // Properties Store
   const properties = usePropertiesStore((state) => state.properties);
   const addProperty = usePropertiesStore((state) => state.addProperty);
   const addPropertyAsync = usePropertiesStore((state) => state.addPropertyAsync);
+  const updateProperty = usePropertiesStore((state) => state.updateProperty);
   const syncWithCloud = usePropertiesStore((state) => state.syncWithCloud);
   const migrateLocalToCloud = usePropertiesStore((state) => state.migrateLocalToCloud);
   const isSynced = usePropertiesStore((state) => state.isSynced);
@@ -113,6 +121,14 @@ const FlipCalculator: React.FC = () => {
     }
   }, [user, isSynced, properties.length, syncWithCloud]);
 
+  // Сброс режима редактирования при переключении вкладок (кроме formula)
+  useEffect(() => {
+    if (activeTab !== 'formula' && editingPropertyId) {
+      setEditingPropertyId(null);
+      setTempPropertyId(crypto.randomUUID());
+    }
+  }, [activeTab, editingPropertyId]);
+
   // Миграция из старого localStorage (если есть)
   useEffect(() => {
     const migrateOldData = async () => {
@@ -149,7 +165,88 @@ const FlipCalculator: React.FC = () => {
     updateParam(key, (isNaN(num) ? 0 : num) as CalculatorParams[typeof key]);
   };
 
-  // Сохранение объекта
+  // Загрузка объекта в форму для редактирования
+  const handleLoadProperty = async (propertyId: string) => {
+    try {
+      const property = await getProperty(propertyId);
+      if (!property) {
+        toast.error('Объект не найден');
+        return;
+      }
+
+      // Парсим данные из БД
+      const propertyParams = property.params as unknown as CalculatorParams;
+      const propertyCoordinates = property.coordinates as unknown as Coordinates | null;
+
+      // Загружаем изображения из БД (если есть)
+      if (property.images && property.images.length > 0) {
+        // Проверяем, что images содержат пути, а не URLs
+        const invalidImages = property.images.filter(img => 
+          img.startsWith('http://') || img.startsWith('https://')
+        );
+        
+        if (invalidImages.length > 0) {
+          console.warn('[App] Found URLs in property.images instead of paths:', {
+            invalidCount: invalidImages.length
+          });
+        }
+
+        // Убеждаемся, что сохраняем только пути (не URLs, не base64)
+        const imagePaths = property.images.filter(img => {
+          // Пропускаем base64 и URLs - это должны быть только пути
+          const isPath = !img.startsWith('data:') && !img.startsWith('http');
+          if (!isPath) {
+            console.warn('[App] Filtering out non-path image:', img);
+          }
+          return isPath;
+        });
+
+        propertyParams.propertyImages = imagePaths;
+        
+        // Debug: Loaded property images
+        if (imagePaths.length > 0) {
+          console.warn('[App] Loaded property images:', {
+            imageCount: imagePaths.length,
+            allArePaths: imagePaths.every(img => !img.startsWith('http') && !img.startsWith('data:'))
+          });
+        }
+      } else {
+        // Если images нет, используем propertyImages из params (для обратной совместимости)
+        // Debug: Using legacy propertyImages
+        if (propertyParams.propertyImages && propertyParams.propertyImages.length > 0) {
+          console.warn('[App] Using propertyImages from params (legacy):', {
+            count: propertyParams.propertyImages.length
+          });
+        }
+      }
+
+      // Загружаем данные в форму
+      loadFromSaved(propertyParams, propertyCoordinates);
+      
+      // Устанавливаем ID редактируемого объекта
+      setEditingPropertyId(propertyId);
+      setTempPropertyId(propertyId);
+
+      // Переключаемся на вкладку с формой
+      setActiveTab('formula');
+
+      haptic.success();
+      toast.success('Объект загружен в форму', {
+        description: 'Вы можете редактировать данные и сохранить изменения',
+      });
+    } catch (error: unknown) {
+      console.error('[App] Load property error:', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      const message = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      haptic.error();
+      toast.error('Ошибка загрузки объекта', {
+        description: message,
+      });
+    }
+  };
+
+  // Сохранение объекта (создание нового или обновление существующего)
   const handleSaveProperty = async () => {
     if (!params.propertyName.trim()) {
       haptic.warning();
@@ -159,20 +256,72 @@ const FlipCalculator: React.FC = () => {
       return;
     }
     try {
-      await addPropertyAsync(params, calculations, coordinates, tempPropertyId);
+      if (editingPropertyId) {
+        // Обновляем существующий объект напрямую через API
+        try {
+          // Фильтруем изображения: в БД сохраняем только пути Storage, не base64
+          const cloudImages = (params.propertyImages || []).filter(
+            (img) => !img.startsWith('data:') // исключаем base64
+          );
+          
+          const updateData = {
+            name: params.propertyName || 'Без названия',
+            location: params.location || '',
+            deal_type: params.dealType as 'secondary' | 'offplan',
+            params: JSON.parse(JSON.stringify(params)),
+            calculations: JSON.parse(JSON.stringify(calculations)),
+            coordinates: coordinates ? JSON.parse(JSON.stringify(coordinates)) : null,
+            images: cloudImages.length > 0 ? cloudImages : null,
+          };
+          
+          // Обновляем в БД
+          await updatePropertyApi(editingPropertyId, updateData);
+          
+          // Также обновляем локальный store, если объект там есть
+          const localProperty = properties.find(p => p.id === editingPropertyId);
+          if (localProperty) {
+            updateProperty(editingPropertyId, {
+              ...params,
+              calculations,
+              coordinates,
+              savedAt: new Date().toISOString(),
+            });
+          }
+          
+          haptic.success();
+          toast.success('Объект обновлён!', {
+            description: 'Изменения сохранены',
+          });
+          
+          // Сбрасываем режим редактирования
+          setEditingPropertyId(null);
+          setTempPropertyId(crypto.randomUUID());
+          resetParams();
+        } catch (updateError) {
+          console.error('Update error:', updateError instanceof Error ? updateError.message : String(updateError));
+          const message = updateError instanceof Error ? updateError.message : 'Неизвестная ошибка';
+          haptic.error();
+          toast.error('Ошибка обновления объекта', {
+            description: message,
+          });
+        }
+      } else {
+        // Создаём новый объект
+        await addPropertyAsync(params, calculations, coordinates, tempPropertyId);
 
-      // Генерируем новый ID для следующего объекта
-      setTempPropertyId(crypto.randomUUID());
+        // Генерируем новый ID для следующего объекта
+        setTempPropertyId(crypto.randomUUID());
 
-      // Сбрасываем форму к дефолтным значениям ПОСЛЕ успешного сохранения
-      resetParams();
+        // Сбрасываем форму к дефолтным значениям ПОСЛЕ успешного сохранения
+        resetParams();
 
-      haptic.success();
-      toast.success('Объект сохранён!', {
-        description: 'Форма очищена для нового объекта',
-      });
+        haptic.success();
+        toast.success('Объект сохранён!', {
+          description: 'Форма очищена для нового объекта',
+        });
+      }
     } catch (error: unknown) {
-      console.error('Save error:', error);
+      console.error('Save error:', error instanceof Error ? error.message : String(error));
       const message = error instanceof Error ? error.message : 'Неизвестная ошибка';
       haptic.error();
       toast.error('Ошибка сохранения', {
@@ -223,14 +372,22 @@ const FlipCalculator: React.FC = () => {
                 params={params}
                 onParamChange={handleParamChange}
                 onSave={handleSaveProperty}
+                isEditing={editingPropertyId !== null}
               />
             </div>
 
             {/* Правая область - результаты */}
             <div className="md:col-span-2 space-y-4 sm:space-y-6">
               {/* Заголовок объекта */}
-              {(params.propertyName || params.location) && (
+              {(params.propertyName || params.location || editingPropertyId) && (
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-xl p-3 sm:p-4 border border-indigo-200 dark:border-indigo-800">
+                  {editingPropertyId && (
+                    <div className="mb-2">
+                      <Badge variant="secondary" className="text-xs">
+                        Режим редактирования
+                      </Badge>
+                    </div>
+                  )}
                   <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
                     {params.propertyName || 'Без названия'}
                   </h3>
@@ -281,7 +438,7 @@ const FlipCalculator: React.FC = () => {
 
                 {/* Mobile показывает только контент, навигация внизу */}
                 <div className="bg-card rounded-xl border border-border md:border-0 md:rounded-none">
-                  <div className="p-3 sm:p-6">
+                  <div className="px-[1px] py-3 sm:py-6">
                     <TabsContent value="formula" className="mt-0">
                       <DetailedBreakdown params={params} calculations={calculations} />
                     </TabsContent>
@@ -295,6 +452,9 @@ const FlipCalculator: React.FC = () => {
                         onMetricEdit={handleMetricEdit}
                         onClearMetric={clearCustomMetric}
                       />
+                    </TabsContent>
+                    <TabsContent value="shared" className="mt-0">
+                      <SharedPropertiesList onOpen={handleLoadProperty} />
                     </TabsContent>
                   </div>
                 </div>

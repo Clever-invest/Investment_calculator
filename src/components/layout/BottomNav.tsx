@@ -3,7 +3,7 @@
  * Показывается только на мобильных устройствах (md:hidden)
  */
 
-import { Calculator, MoreHorizontal } from 'lucide-react'
+import { Calculator, MoreHorizontal, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { haptic } from '@/utils/haptic'
 import type { TabId } from '@/stores/uiStore'
@@ -17,6 +17,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'formula', icon: <Calculator className="w-5 h-5" />, label: 'Расчёт' },
   { id: 'early', icon: <MoreHorizontal className="w-5 h-5" />, label: 'Скидки' },
+  { id: 'shared', icon: <Globe className="w-5 h-5" />, label: 'Общие' },
 ]
 
 interface BottomNavProps {

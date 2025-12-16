@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         });
       });
     } catch (error) {
-      console.error('Error initializing auth:', error);
+      console.error('Error initializing auth:', error instanceof Error ? error.message : String(error));
       set({ loading: false, initialized: true });
     }
   },

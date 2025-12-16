@@ -1,7 +1,7 @@
 # Flip Calculator — Investment Property Calculator
 
 > **Версия:** 2.2.0  
-> **Последнее обновление:** 12 декабря 2025  
+> **Последнее обновление:** 15 декабря 2025  
 > **Статус:** ✅ Production Ready
 
 ---
@@ -53,15 +53,16 @@
 
 ---
 
-## 🚧 Последние изменения (11 декабря 2025)
+## 🚧 Последние изменения (15 декабря 2025)
 
 ### Синхронизация с Notion
-- [x] Edge Function `sync-to-notion` v8
+- [x] Edge Function `sync-to-notion` v15
 - [x] Database Trigger на INSERT/UPDATE/DELETE
 - [x] Поле `notion_page_id` в таблице properties
 - [x] Поддержка Place property с координатами
 - [x] Все фото прикрепляются к странице
 - [x] ROI/IRR в формате Percent
+- [x] Синхронизация `serial_number` → `Slot ID` в Notion
 
 Подробнее: `docs/NOTION_SYNC_SETUP.md`
 
@@ -118,6 +119,7 @@ calculations    JSONB
 coordinates     JSONB
 images          TEXT[]
 notes           TEXT
+serial_number   TEXT -- Серийный номер (SL-001, SL-002, ...)
 is_archived     BOOLEAN DEFAULT false
 notion_page_id  TEXT -- ID страницы в Notion для синхронизации
 created_at      TIMESTAMPTZ

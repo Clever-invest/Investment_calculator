@@ -1,8 +1,8 @@
 # Синхронизация Supabase → Notion
 
 > **Статус:** ✅ Production Ready  
-> **Версия Edge Function:** v8  
-> **Последнее обновление:** 11 декабря 2025
+> **Версия Edge Function:** v15  
+> **Последнее обновление:** 15 декабря 2025
 
 ## Архитектура
 
@@ -15,10 +15,11 @@ Flip Calculator → Supabase INSERT/UPDATE/DELETE → Database Trigger → Edge 
 | Компонент | Статус |
 |-----------|--------|
 | Поле `notion_page_id` | ✅ |
-| Edge Function `sync-to-notion` v8 | ✅ |
+| Edge Function `sync-to-notion` v15 | ✅ |
 | Database Trigger `trigger_notion_sync` | ✅ |
 | pg_net для async HTTP | ✅ |
 | Авторизация в триггере | ✅ |
+| Синхронизация `serial_number` → `Slot ID` | ✅ |
 
 ---
 
@@ -65,6 +66,7 @@ Flip Calculator → Supabase INSERT/UPDATE/DELETE → Database Trigger → Edge 
 | **Images** | Files | Фото объекта |
 | **Calculator ID** | Text | ID объекта в Supabase |
 | **Calculator Link** | URL | Ссылка на калькулятор |
+| **Slot ID** | Text | Серийный номер объекта (SL-001, SL-002, ...) |
 | **Agent/Source** | Text | Агент/источник (Notion-only) |
 | **Telegram Post URL** | URL | Ссылка на пост в Telegram (Notion-only) |
 | **SPV** | Text | SPV компания (Notion-only) |
@@ -139,6 +141,7 @@ supabase secrets set NOTION_API_KEY=secret_xxx NOTION_DATABASE_ID=xxx
 | `calculations.breakEvenPrice` | Break-even Price |
 | `id` | Calculator ID |
 | URL | Calculator Link |
+| `serial_number` | Slot ID |
 
 ### Notion-only поля (не синхронизируются)
 

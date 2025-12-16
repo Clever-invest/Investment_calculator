@@ -182,7 +182,7 @@ export const usePropertiesStore = create<PropertiesState>()(
               isLoading: false 
             }, false, 'syncWithCloud:complete');
           } catch (error) {
-            console.error('Sync error:', error);
+            console.error('Sync error:', error instanceof Error ? error.message : String(error));
             set({ 
               error: 'Ошибка синхронизации с облаком', 
               isLoading: false 
@@ -238,7 +238,7 @@ export const usePropertiesStore = create<PropertiesState>()(
               }
             }
           } catch (error) {
-            console.error('Error saving to cloud:', error);
+            console.error('Error saving to cloud:', error instanceof Error ? error.message : String(error));
           }
         },
         
@@ -254,7 +254,7 @@ export const usePropertiesStore = create<PropertiesState>()(
               await deletePropertyImages(user.id, id);
               await propertiesApi.deleteProperty(id);
             } catch (error) {
-              console.error('Error deleting from cloud:', error);
+              console.error('Error deleting from cloud:', error instanceof Error ? error.message : String(error));
             }
           }
         },
@@ -280,7 +280,7 @@ export const usePropertiesStore = create<PropertiesState>()(
             localStorage.removeItem('properties-storage');
             localStorage.removeItem('savedProperties'); // старый формат
           } catch (error) {
-            console.error('Migration error:', error);
+            console.error('Migration error:', error instanceof Error ? error.message : String(error));
             set({ 
               error: 'Ошибка миграции данных', 
               isLoading: false 
@@ -296,7 +296,7 @@ export const usePropertiesStore = create<PropertiesState>()(
         onRehydrateStorage: () => {
           return (_state, error) => {
             if (error) {
-              console.error('Zustand: hydration error', error);
+              console.error('Zustand: hydration error', error instanceof Error ? error.message : String(error));
             }
           };
         },

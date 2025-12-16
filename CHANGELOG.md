@@ -5,6 +5,17 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 версионирование следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [2.2.1] - 2025-12-15
+
+### Добавлено
+- **Синхронизация Slot ID с Notion** — поле `serial_number` из Supabase теперь синхронизируется с полем `Slot ID` в Notion
+  - Обновлена Edge Function `sync-to-notion` до версии v15
+  - Добавлен маппинг `serial_number` → `Slot ID` в функцию синхронизации
+
+### Изменено
+- Обновлена документация синхронизации с Notion (`docs/NOTION_SYNC_SETUP.md`)
+- Обновлены технические заметки (`NOTES.md`) с информацией о новом поле
+
 ## [2.0.0] - 2025-12-05
 
 ### Добавлено

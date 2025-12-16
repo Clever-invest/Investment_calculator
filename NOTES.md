@@ -210,12 +210,13 @@ const AuthPage = lazy(() => import('./pages/AuthPage'));
 INSERT/UPDATE/DELETE → trigger_notion_sync → pg_net HTTP → sync-to-notion Edge Function → Notion API
 ```
 
-### Edge Function v8
+### Edge Function v15
 - Создаёт страницу при INSERT со статусом "Sourcing"
 - Обновляет страницу при UPDATE (не трогает Status)
 - Архивирует страницу при DELETE
 - Прикрепляет все фото (не только первое)
 - ROI/IRR делятся на 100 для формата Percent
+- Синхронизирует `serial_number` → `Slot ID`
 
 ### Маппинг полей
 | Supabase | Notion | Примечание |
@@ -226,6 +227,7 @@ INSERT/UPDATE/DELETE → trigger_notion_sync → pg_net HTTP → sync-to-notion 
 | `calculations.profit.roi` | ROI | Формат Percent, делим на 100 |
 | `calculations.profit.irr` | IRR | Формат Percent, делим на 100 |
 | `images[]` | Images (Files) | Все фото, первое = cover |
+| `serial_number` | Slot ID | Серийный номер (SL-001, SL-002, ...) |
 
 ### Управление
 ```sql

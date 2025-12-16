@@ -82,7 +82,7 @@ export const saveProperty = async (property: SavedProperty): Promise<boolean> =>
     const result = await storage.set(`${PROPERTY_PREFIX}${property.id}`, JSON.stringify(property));
     return !!result;
   } catch (error) {
-    console.error('Save error:', error);
+    console.error('Save error:', error instanceof Error ? error.message : String(error));
     throw error;
   }
 };
@@ -93,7 +93,7 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
     await storage.delete(`${PROPERTY_PREFIX}${id}`);
     return true;
   } catch (error) {
-    console.error('Delete error:', error);
+    console.error('Delete error:', error instanceof Error ? error.message : String(error));
     throw error;
   }
 };
